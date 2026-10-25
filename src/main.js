@@ -5,14 +5,14 @@ function icon(name){return `<svg class="icon" viewBox="0 0 24 24" aria-hidden="t
 document.querySelectorAll('[data-icon]').forEach(el=>el.innerHTML=icon(el.dataset.icon));
 const ns='http://www.w3.org/2000/svg';
 function svgEl(type,attrs){const el=document.createElementNS(ns,type);for(const [k,v] of Object.entries(attrs))el.setAttribute(k,v);return el;}
-for(let i=0;i<60;i++){$('#ticks').appendChild(svgEl('line',{x1:150,y1:i%5===0?13:15,x2:150,y2:i%5===0?28:21,stroke:'#303830','stroke-width':i%5===0?2.4:1,transform:`rotate(${i*6} 150 150)`}));}
-for(let i=1;i<=12;i++){const a=i*Math.PI/6;const t=svgEl('text',{x:150+Math.sin(a)*105,y:150-Math.cos(a)*105+11,'text-anchor':'middle','font-family':'Arial, sans-serif','font-size':30,'font-weight':500,fill:'#232c25'});t.textContent=i;$('#numbers').appendChild(t);}
+for(let i=0;i<60;i++){$('#ticks').appendChild(svgEl('line',{x1:150,y1:i%5===0?13:15,x2:150,y2:i%5===0?28:21,stroke:'#111','stroke-width':i%5===0?2.4:1,transform:`rotate(${i*6} 150 150)`}));}
+for(let i=1;i<=12;i++){const a=i*Math.PI/6;const t=svgEl('text',{x:150+Math.sin(a)*105,y:150-Math.cos(a)*105+11,'text-anchor':'middle','font-family':'Arial, sans-serif','font-size':30,'font-weight':500,fill:'#111'});t.textContent=i;$('#numbers').appendChild(t);}
 let selected=0,fourth=0,running=false,saved=0,startedAt=null,finished=false,wakeLock=null;
 let scale=100;let draftScale=100;
 function readPrefs(){try{return JSON.parse(localStorage.getItem('suneung-prefs')||'{}');}catch{return {};}}
 const prefs=readPrefs();scale=Math.min(200,Math.max(60,Number(prefs.scale)||100));
-$('#seconds-toggle').checked=prefs.seconds!==false;$('#remaining-toggle').checked=prefs.remaining===true;
-function savePrefs(){try{localStorage.setItem('suneung-prefs',JSON.stringify({scale,seconds:$('#seconds-toggle').checked,remaining:$('#remaining-toggle').checked}));}catch{}}
+$('#seconds-toggle').checked=prefs.seconds!==false;$('#remaining-toggle').checked=prefs.remaining===true;$('#actual-size-toggle').checked=prefs.actualSize===true;
+function savePrefs(){try{localStorage.setItem('suneung-prefs',JSON.stringify({scale,seconds:$('#seconds-toggle').checked,remaining:$('#remaining-toggle').checked,actualSize:$('#actual-size-toggle').checked}));}catch{}}
 function applyScale(value){document.documentElement.style.setProperty('--scale',value/100);$('#scale-output').value=`${value}%`;$('#scale').setAttribute('aria-valuetext',`${value}%`);}
 applyScale(scale);
 function current(){return selected===3?{...periods[3],...fourthPeriods[fourth]}:periods[selected];}
@@ -33,6 +33,8 @@ function render(){
   const clockSeconds=secondsAt(p.start)+Math.floor(e);
   $('#dial').setAttribute('aria-label',`${p.name} 시계 ${String(Math.floor(clockSeconds/3600)).padStart(2,'0')}:${String(Math.floor(clockSeconds/60)%60).padStart(2,'0')}:${String(clockSeconds%60).padStart(2,'0')}`);
   $('#second-hand').style.display=$('#seconds-toggle').checked?'':'none';
+  document.body.classList.toggle('actual-size',$('#actual-size-toggle').checked);
+  $('#size-caption').textContent=$('#actual-size-toggle').checked?'실제 크기 · 시계판 지름 30mm (보정값 적용)':'크게 보기';
   $('#remaining').hidden=!$('#remaining-toggle').checked;
   $('#remaining').textContent=`남은 시간 ${remainingText(duration-e)}`;
   $('#progress-bar').max=duration;
@@ -49,9 +51,27 @@ function render(){
   $('#focus-start').innerHTML=`${running?'일시정지':'연습 시작'} <kbd>Space</kbd>`;
 }
 $('#start').addEventListener('click',toggle);$('#focus-start').addEventListener('click',toggle);$('#reset').addEventListener('click',()=>{reset();notify('시계를 시작 시각으로 되돌렸어요.');});
-for(const id of ['seconds-toggle','remaining-toggle'])$(`#${id}`).addEventListener('change',()=>{savePrefs();render();});
-$('#focus').addEventListener('click',()=>{document.body.classList.add('focus-mode');$('#exit-focus').focus();});function exitFocus(){document.body.classList.remove('focus-mode');$('#focus').focus();}$('#exit-focus').addEventListener('click',exitFocus);
-document.addEventListener('keydown',e=>{if(e.code==='Escape'&&document.body.classList.contains('focus-mode'))exitFocus();if(e.code==='Space'&&!e.repeat&&!document.querySelector('dialog[open]')&&!['INPUT','SELECT','TEXTAREA','BUTTON','A'].includes(document.activeElement.tagName)){e.preventDefault();toggle();}});
+for(const id of ['seconds-toggle','remaining-toggle','actual-size-toggle'])$(`#${id}`).addEventListener('change',()=>{savePrefs();render();});
+function enterFocus(){document.body.classList.add('focus-mode');$('#exit-focus').innerHTML='집중 모드 나가기 <kbd>Esc</kbd>';$('#exit-focus').focus();}
+async function exitFocus(){
+  if(document.fullscreenElement){
+    try{await document.exitFullscreen();}catch{notify('전체화면을 종료하지 못했어요. Esc 키로 나가 주세요.');return;}
+  }
+  document.body.classList.remove('focus-mode');
+  $('#focus').focus();
+}
+$('#focus').addEventListener('click',enterFocus);
+$('#exit-focus').addEventListener('click',exitFocus);
+$('#fullscreen').addEventListener('click',async()=>{
+  enterFocus();
+  if(!document.fullscreenEnabled||!document.documentElement.requestFullscreen){notify('이 브라우저는 전체화면을 지원하지 않아 시계 집중 모드로 전환했어요.');return;}
+  try{await document.documentElement.requestFullscreen();}catch{notify('전체화면을 열지 못해 시계 집중 모드로 전환했어요.');}
+});
+document.addEventListener('fullscreenchange',()=>{
+  if(document.fullscreenElement)$('#exit-focus').innerHTML='전체화면 나가기 <kbd>Esc</kbd>';
+  else if(document.body.classList.contains('focus-mode'))exitFocus();
+});
+document.addEventListener('keydown',e=>{if(e.code==='Escape'&&document.body.classList.contains('focus-mode'))exitFocus();if(e.code==='Space'&&!e.repeat&&!document.querySelector('dialog[open]')&&!['INPUT','SELECT','TEXTAREA','BUTTON','A','SUMMARY'].includes(document.activeElement.tagName)){e.preventDefault();toggle();}});
 $('#guide').addEventListener('click',()=>$('#guide-dialog').showModal());$('#close-guide').addEventListener('click',()=>$('#guide-dialog').close());
 $('#size-button').addEventListener('click',()=>{draftScale=scale;$('#scale').value=scale;applyScale(scale);$('#calibration-dialog').showModal();});$('#scale').addEventListener('input',e=>{draftScale=Number(e.target.value);applyScale(draftScale);});$('#save-size').addEventListener('click',()=>{scale=draftScale;savePrefs();$('#calibration-dialog').close();notify('이 화면의 시계 크기를 저장했어요.');});$('#calibration-dialog').addEventListener('close',()=>applyScale(scale));
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){render();if(running)requestWakeLock();}});
