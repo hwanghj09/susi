@@ -9,6 +9,10 @@ npm run dev
 
 `npm run build`로 정적 배포 파일을 `dist/`에 생성합니다. `npm test`로 시간 계산을 검증합니다.
 
+배포 주소: https://hwanghj09.github.io/susi/
+
+`main`에 push하면 GitHub Actions가 테스트와 빌드를 거쳐 GitHub Pages에 자동 배포합니다. Actions의 `Deploy to GitHub Pages`에서 수동 실행할 수도 있습니다. 저장소 Settings → Pages의 배포 소스는 `GitHub Actions`로 설정합니다.
+
 - 국어, 수학, 영어, 한국사·탐구 1·2, 제2외국어·한문
 - 시작·일시정지·초기화, Space 단축키, 시계 집중 모드(Esc로 종료)
 - 초침 및 남은 시간 표시 설정, 로컬 저장 크기 보정
