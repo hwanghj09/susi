@@ -28,12 +28,11 @@ function applyScale(value){document.documentElement.style.setProperty('--scale',
 applyScale(scale);
 function current(){return selected===3?{...periods[3],...fourthPeriods[fourth]}:periods[selected];}
 function elapsed(){return elapsedAt(saved,startedAt,Date.now(),current().minutes*60);}
-$('#periods').innerHTML=periods.map((p,i)=>`<button class="period-button ${i===0?'active':''}" data-period="${i}" aria-pressed="${i===0}"><span class="period-top">${p.label}<span class="period-check" aria-hidden="true">${i===0?'✓':''}</span></span><span class="period-name">${p.name}</span><span class="period-time">${p.start} — ${p.end}</span></button>`).join('');
-$('#periods').addEventListener('click',e=>{const button=e.target.closest('[data-period]');if(!button||Number(button.dataset.period)===selected)return;selected=Number(button.dataset.period);fourth=0;reset();document.querySelectorAll('.period-button').forEach((b,i)=>{b.classList.toggle('active',i===selected);b.setAttribute('aria-pressed',i===selected);b.querySelector('.period-check').textContent=i===selected?'✓':'';});updateSession();});
+$('#periods').innerHTML=periods.map((p,i)=>`<button class="period-button ${i===0?'active':''}" data-period="${i}" aria-label="${p.label} ${p.name}" aria-pressed="${i===0}">${p.name}</button>`).join('');
+$('#periods').addEventListener('click',e=>{const button=e.target.closest('[data-period]');if(!button||Number(button.dataset.period)===selected)return;selected=Number(button.dataset.period);fourth=0;reset();document.querySelectorAll('.period-button').forEach((b,i)=>{b.classList.toggle('active',i===selected);b.setAttribute('aria-pressed',i===selected);});updateSession();});
 function updateSession(){
   const p=current();
-  $('#period-label').textContent=p.label;
-  $('#subject-title').textContent=`${p.name} 영역`;
+  $('#subject-title').textContent=p.name;
   $('#start-time').textContent=p.start;
   $('#end-time').textContent=p.end;
   $('#duration').innerHTML=`${p.minutes}<span>분</span>`;
@@ -68,10 +67,6 @@ function render(){
   document.body.classList.toggle('actual-size',$('#actual-size-toggle').checked);
   $('#remaining').hidden=!$('#remaining-toggle').checked;
   $('#remaining').textContent=`남은 시간 ${remainingText(duration-e)}`;
-  $('#progress-bar').max=duration;
-  $('#progress-bar').value=Math.floor(e);
-  $('#progress-bar').setAttribute('aria-valuetext',`${Math.floor(e/60)}분 / ${p.minutes}분`);
-  $('#elapsed-label').textContent=`${Math.floor(e/60)} / ${p.minutes}분`;
   const label=running?'일시정지':finished?'다시 재생':e>0?'이어서 재생':'재생';
   if($('#start').getAttribute('aria-label')!==label){
     $('#start').setAttribute('aria-label',label);
@@ -79,10 +74,9 @@ function render(){
     $('#start [data-icon]').innerHTML=icon(running?'pause':'play');
   }
   $('#reset').disabled=e===0&&!finished;
-  $('#status').classList.toggle('running',running);
   const status=finished?'완료':running?'진행 중':e>0?'일시정지':'준비';
   // Only announce a status change, not every clock tick.
-  if($('#status').textContent.trim()!==status)$('#status').innerHTML=`<i aria-hidden="true"></i> ${status}`;
+  if($('#status').textContent.trim()!==status)$('#status').textContent=status;
 }
 $('#start').addEventListener('click',toggle);$('#reset').addEventListener('click',reset);
 for(const id of ['seconds-toggle','remaining-toggle','actual-size-toggle'])$(`#${id}`).addEventListener('change',()=>{savePrefs();render();});

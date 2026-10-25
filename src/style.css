@@ -37,30 +37,21 @@ p { margin: 0; }
 .skip-link { position: fixed; left: 16px; top: -100px; padding: 12px 20px; background: var(--ink); color: var(--surface); z-index: 30; }
 .skip-link:focus { top: 16px; color: var(--surface); }
 .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
-.header { max-width: 1360px; margin: auto; padding: 15px 32px; display: flex; gap: 24px; align-items: center; border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 3; background: var(--surface); }
-.brand { display: flex; align-items: center; gap: 13px; font-size: 23px; font-weight: 700; white-space: nowrap; }
-.brand .icon { width: 27px; height: 27px; }
+.header { max-width: 1000px; margin: auto; padding: 12px 24px; display: flex; gap: 24px; align-items: center; position: sticky; top: 0; z-index: 3; background: var(--surface); }
+.brand { font-size: 18px; font-weight: 600; white-space: nowrap; }
 .header-actions { margin-left: auto; display: flex; align-items: center; gap: 8px; }
 .icon-button { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 10px; border-radius: 50%; flex-shrink: 0; }
 .icon-button .icon { width: 23px; height: 23px; }
 .icon-button:hover:not(:disabled) { background: var(--selected); }
 .icon-button:disabled { opacity: .25; cursor: default; }
 .focus-subject, #exit-focus { display: none; }
-main { max-width: 1360px; margin: auto; padding: 24px 32px; }
-.periods { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin-bottom: 24px; }
-.period-button { padding: 13px 16px; text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; }
+main { max-width: 1000px; margin: auto; padding: 12px 24px 24px; }
+.periods { display: flex; gap: 12px; justify-content: center; overflow-x: auto; margin-bottom: 24px; scrollbar-width: thin; }
+.period-button { min-height: 44px; padding: 10px 14px; flex-shrink: 0; border-bottom: 2px solid transparent; color: var(--muted); font-size: 14px; }
 .period-button:hover { background: var(--selected); }
-.period-button.active { background: var(--selected); border-color: var(--primary); box-shadow: inset 0 -2px var(--primary); }
-.period-top { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--muted); }
-.period-check { width: 18px; height: 18px; display: grid; place-items: center; font-size: 12px; color: var(--primary); }
-.period-name { display: block; font-size: 16px; font-weight: 600; letter-spacing: -.04em; margin: 6px 0; }
-.period-time { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
-.workspace { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 24px; align-items: center; }
+.period-button.active { border-bottom-color: var(--primary); color: var(--ink); font-weight: 600; }
+.workspace { display: flex; flex-direction: column; align-items: center; }
 .clock-panel { display: flex; flex-direction: column; min-width: 0; }
-.status { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 12px; white-space: nowrap; }
-.status i { width: 6px; height: 6px; border: 1px solid currentColor; border-radius: 50%; }
-.status.running { color: var(--primary); }
-.status.running i { background: currentColor; }
 .watch-stage { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 22px 16px 0; }
 .watch { --dial: min(clamp(210px, 24vw, 300px), calc(100vw - 100px), max(120px, calc((100dvh - 360px) / 1.8))); height: calc(var(--dial) * 1.8); width: calc(var(--dial) * 1.18); position: relative; display: grid; place-items: center; flex-shrink: 0; }
 .strap { position: absolute; left: 50%; transform: translateX(-50%); width: calc(var(--dial) * .57); height: 48%; border: 1px solid #111; background: repeating-linear-gradient(0deg, #ffffff04 0 1px, transparent 1px 4px), linear-gradient(90deg, #080808, #333 8%, #111 16%, #1b1b1b 50%, #111 84%, #333 92%, #080808); box-shadow: 3px 5px 10px #00000026; border-radius: 9px; }
@@ -79,27 +70,12 @@ main { max-width: 1360px; margin: auto; padding: 24px 32px; }
 .play-button:hover { background: #333; color: var(--primary-foreground); }
 .text-button { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 9px 10px; border-radius: 4px; font-size: 13px; }
 .text-button:hover { background: var(--selected); }
-.session-panel { padding: 24px; min-width: 0; border: 1px solid var(--line); border-radius: 8px; }
-.subject-heading > span { color: var(--muted); font-size: 13px; }
-.subject-heading h2 { font-size: 30px; font-weight: 700; letter-spacing: -.05em; line-height: 1.4; margin: 8px 0 10px; }
-.schedule { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 22px 0 18px; margin-top: 23px; border-top: 1px solid var(--line); }
-.schedule > div { display: flex; flex-direction: column; gap: 3px; }
-.schedule > div:last-child { text-align: right; }
-.schedule span { font-size: 12px; color: var(--muted); }
-.schedule strong { font-size: 28px; font-weight: 500; font-variant-numeric: tabular-nums; letter-spacing: -.04em; }
-.schedule-connector { flex: 1; max-width: 29px; border-top: 1px solid var(--line); margin-top: 20px; }
-.duration { display: flex; align-items: center; justify-content: space-between; margin-bottom: 26px; }
-.duration > span { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 13px; }
-.duration strong { font-size: 18px; font-weight: 500; }
-.duration strong span { font-size: 13px; margin-left: 4px; }
-#elapsed-label { font-variant-numeric: tabular-nums; font-size: 12px; color: var(--muted); }
-.progress-track { display: block; appearance: none; border: 0; height: 4px; width: 100%; margin: 10px 0 0; background: var(--line); border-radius: 2px; overflow: hidden; color: var(--primary); }
-.progress-track::-webkit-progress-bar { background: var(--line); }
-.progress-track::-webkit-progress-value { background: var(--primary); }
-.progress-track::-moz-progress-bar { background: var(--primary); }
+.session-panel { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px 16px; min-height: 32px; }
+.subject-heading { display: contents; }
+.schedule { display: flex; gap: 16px; color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
 .primary-button { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 50px; width: 100%; padding: 12px 16px; border: 1px solid var(--primary); border-radius: 5px; background: var(--primary); color: var(--primary-foreground); font-weight: 500; }
 .primary-button:hover { background: #333; color: var(--primary-foreground); }
-.fourth-select { display: block; width: 100%; min-height: 44px; margin-top: 14px; padding: 8px; border: 1px solid var(--line); border-radius: 3px; background: var(--surface); color: var(--ink); font-size: 13px; }
+.fourth-select { display: block; max-width: 100%; min-height: 44px; padding: 8px; border: 1px solid var(--line); border-radius: 3px; background: var(--surface); color: var(--ink); font-size: 13px; }
 .preferences { display: grid; grid-template-columns: 1fr; margin-top: 8px; }
 .preference small { color: var(--muted); font-size: 12px; }
 .calibration-setting { padding: 12px 0; }
@@ -149,31 +125,16 @@ body.focus-mode #exit-focus { display: inline-flex; }
 body.focus-mode .player-controls { position: fixed; bottom: max(16px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); width: 248px; padding: 12px 0; background: var(--surface); border-radius: 64px; z-index: 2; }
 body.focus-mode #reset { position: absolute; left: 8px; }
 
-@media (max-width: 1000px) {
-  .workspace { grid-template-columns: minmax(0, 1fr) 300px; gap: 18px; }
-  .session-panel { padding: 24px 20px; }
-  .period-button { padding: 13px 11px; }
-  .period-name { font-size: 14px; }
-}
 @media (max-width: 760px) {
-  .header { padding: 17px 20px; }
-  .brand { font-size: 21px; }
-  main { padding: 20px 20px calc(132px + env(safe-area-inset-bottom)); }
-  .periods { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; scrollbar-width: thin; overscroll-behavior-x: contain; scroll-snap-type: x proximity; }
-  .period-button { flex: 0 0 136px; scroll-snap-align: start; padding: 11px 13px; }
-  .period-time { display: none; }
-  .period-name { margin-bottom: 0; }
+  .header { padding: 12px 16px; }
+  main { padding: 8px 16px calc(132px + env(safe-area-inset-bottom)); }
+  .periods { justify-content: flex-start; gap: 4px; margin-bottom: 12px; overscroll-behavior-x: contain; }
+  .period-button { padding: 10px 12px; font-size: 13px; }
   .watch { --dial: min(60vw, 31dvh, 240px); }
-  .workspace { grid-template-columns: 1fr; gap: 22px; }
-  .session-panel { padding: 23px; }
-  .subject-heading { position: relative; }
-  .subject-heading h2 { font-size: 29px; }
-  .schedule { margin-top: 20px; }
-  .player-controls { position: fixed; bottom: max(16px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); width: min(320px, calc(100vw - 32px)); padding: 10px 16px; border: 1px solid var(--line); border-radius: 64px; box-shadow: 0 4px 24px #00000012; background: var(--surface); z-index: 2; }
+  .player-controls { position: fixed; bottom: max(16px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); width: min(320px, calc(100vw - 32px)); padding: 10px 16px; background: var(--surface); z-index: 2; }
 }
 @media (max-width: 480px) {
   .header { gap: 10px; }
-  .brand { gap: 9px; font-size: 20px; }
   dialog { padding: 30px 23px 26px; }
 }
 @media (max-width: 760px) and (max-height: 620px) {

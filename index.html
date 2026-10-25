@@ -14,7 +14,7 @@
 <body>
   <a class="skip-link" href="#main">연습 화면으로 건너뛰기</a>
   <header class="header">
-    <a class="brand" href="%BASE_URL%" aria-label="수능의 시간 홈"><span data-icon="clock"></span>수능의 시간</a>
+    <a class="brand" href="%BASE_URL%" aria-label="수능의 시간 홈">수능의 시간</a>
     <span class="focus-subject" id="focus-subject">1교시 · 국어 영역</span>
     <div class="header-actions">
       <button class="icon-button" id="settings-button" aria-label="설정" title="설정" aria-haspopup="dialog" aria-controls="settings-dialog"><span data-icon="settings"></span></button>
@@ -31,6 +31,11 @@
     </section>
 
     <section class="workspace" aria-label="시계와 연습 제어">
+      <div class="session-panel" role="group" aria-labelledby="subject-title">
+        <div class="subject-heading"><h2 class="sr-only" id="subject-title">국어</h2></div>
+        <div class="schedule"><span><span id="start-time">08:40</span>–<span id="end-time">10:00</span></span><span id="duration" aria-label="시험 시간">80<span>분</span></span></div>
+        <span class="sr-only" id="status" role="status">준비</span>
+      </div>
       <div class="clock-panel">
         <div class="watch-stage">
           <div class="watch" id="watch">
@@ -58,13 +63,6 @@
         </div>
       </div>
 
-      <aside class="session-panel" aria-labelledby="subject-title">
-        <div class="subject-heading"><span id="period-label">1교시</span><h2 id="subject-title">국어 영역</h2></div>
-        <span class="status" id="status" role="status"><i aria-hidden="true"></i> 준비</span>
-        <div class="schedule"><div><span>시작 시각</span><strong id="start-time">08:40</strong></div><span class="schedule-connector" aria-hidden="true"></span><div><span>종료 시각</span><strong id="end-time">10:00</strong></div></div>
-        <div class="duration"><span><span data-icon="clock"></span> 시험 시간</span><strong id="duration">80<span>분</span></strong></div>
-        <div class="progress-wrap"><span id="elapsed-label">0 / 80분</span><progress class="progress-track" id="progress-bar" value="0" max="4800" aria-label="연습 진행"></progress></div>
-      </aside>
     </section>
 
   </main>

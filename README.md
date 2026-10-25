@@ -16,6 +16,7 @@ npm run dev
 흑백 화면에 검은 스트랩, 금속 케이스와 흰 시계판으로 실제 손목시계에 가까운 디자인을 사용합니다. [UI-UX-Pro-Max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill)의 가독성과 터치 영역, [frontend-design](https://github.com/anthropics/skills/tree/main/skills/frontend-design)의 일관된 미술 방향, [shadcn/ui](https://github.com/shadcn-ui/ui/tree/main/skills/shadcn)의 의미별 색상과 컴포넌트 원칙, [web-accessibility](https://www.skills.sh/supercent-io/skills-template/web-accessibility)의 키보드·대화상자 접근성, [web-design-guidelines](https://github.com/vercel-labs/agent-skills/tree/main/skills/web-design-guidelines)의 반응형·동작 줄이기 지침을 적용합니다. shadcn의 원칙은 기존 HTML/CSS에 적용하며 React 컴포넌트는 사용하지 않습니다. 접근성 스킬은 원본 저장소가 없어 공개된 스킬 페이지의 사본을 참고했습니다.
 
 - 국어, 수학, 영어, 한국사·탐구 1·2, 제2외국어·한문
+- 중앙 시계와 텍스트 교시 탭, 선택한 시험의 시각·시간만 간결하게 표시
 - 재생·일시정지 아이콘, 초기화, Space 단축키, 브라우저 전체화면(Esc 또는 나가기 버튼으로 종료)
 - 오른쪽 위 톱니바퀴 설정: 실제 크기, 초침, 남은 시간 표시와 크기 보정
 - 교시를 선택한 뒤 재생 버튼으로 시작하며, 같은 교시를 다시 눌러도 연습은 유지
