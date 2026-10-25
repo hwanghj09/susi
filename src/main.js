@@ -13,11 +13,11 @@ function readPrefs(){try{return JSON.parse(localStorage.getItem('suneung-prefs')
 const prefs=readPrefs();scale=Math.min(200,Math.max(60,Number(prefs.scale)||100));
 $('#seconds-toggle').checked=prefs.seconds!==false;$('#remaining-toggle').checked=prefs.remaining===true;
 function savePrefs(){try{localStorage.setItem('suneung-prefs',JSON.stringify({scale,seconds:$('#seconds-toggle').checked,remaining:$('#remaining-toggle').checked}));}catch{}}
-function applyScale(value){document.documentElement.style.setProperty('--scale',value/100);$('#scale-output').value=`${value}%`;}
+function applyScale(value){document.documentElement.style.setProperty('--scale',value/100);$('#scale-output').value=`${value}%`;$('#scale').setAttribute('aria-valuetext',`${value}%`);}
 applyScale(scale);
 function current(){return selected===3?{...periods[3],...fourthPeriods[fourth]}:periods[selected];}
 function elapsed(){return elapsedAt(saved,startedAt,Date.now(),current().minutes*60);}
-$('#periods').innerHTML=periods.map((p,i)=>`<button class="period-button ${i===0?'active':''}" data-period="${i}" aria-pressed="${i===0}"><span class="period-top">${p.label}<span class="period-check">${i===0?'✓':''}</span></span><span class="period-name">${p.name}</span><span class="period-time">${p.start} — ${p.end}</span></button>`).join('');
+$('#periods').innerHTML=periods.map((p,i)=>`<button class="period-button ${i===0?'active':''}" data-period="${i}" aria-pressed="${i===0}"><span class="period-top">${p.label}<span class="period-check" aria-hidden="true">${i===0?'✓':''}</span></span><span class="period-name">${p.name}</span><span class="period-time">${p.start} — ${p.end}</span></button>`).join('');
 $('#periods').addEventListener('click',e=>{const button=e.target.closest('[data-period]');if(!button)return;selected=Number(button.dataset.period);fourth=0;reset();document.querySelectorAll('.period-button').forEach((b,i)=>{b.classList.toggle('active',i===selected);b.setAttribute('aria-pressed',i===selected);b.querySelector('.period-check').textContent=i===selected?'✓':'';});updateSession();toggle();});
 function updateSession(){const p=current();$('#selected-name').textContent=`${p.name} 영역`;$('#period-label').textContent=p.label;$('#subject-title').textContent=`${p.name} 영역`;$('#subject-description').textContent=p.description;$('#start-time').textContent=p.start;$('#end-time').textContent=p.end;$('#duration').innerHTML=`${p.minutes}<span>분</span>`;$('#focus-subject').textContent=`${p.label} · ${p.name} 영역`;$('.fourth-select')?.remove();if(selected===3){const select=document.createElement('select');select.className='fourth-select';select.setAttribute('aria-label','4교시 세부 영역');select.innerHTML=fourthPeriods.map((x,i)=>`<option value="${i}" ${i===fourth?'selected':''}>${x.name} · ${x.start}–${x.end}</option>`).join('');select.addEventListener('change',()=>{fourth=Number(select.value);reset();updateSession();toggle();});$('.subject-heading').appendChild(select);}render();}
 async function requestWakeLock(){try{if('wakeLock' in navigator&&document.visibilityState==='visible')wakeLock=await navigator.wakeLock.request('screen');}catch{}}
@@ -25,10 +25,32 @@ function releaseWakeLock(){if(wakeLock){wakeLock.release().catch(()=>{});wakeLoc
 function toggle(){if(running){saved=elapsed();startedAt=null;running=false;releaseWakeLock();}else{if(finished){saved=0;finished=false;}startedAt=Date.now();running=true;requestWakeLock();}render();}
 function reset(){running=false;saved=0;startedAt=null;finished=false;releaseWakeLock();render();}
 function notify(text){$('#toast').textContent=text;$('#toast').classList.add('visible');clearTimeout(notify.timer);notify.timer=setTimeout(()=>$('#toast').classList.remove('visible'),3500);}
-function render(){const p=current(),duration=p.minutes*60,e=elapsed();if(running&&e>=duration){saved=duration;startedAt=null;running=false;finished=true;releaseWakeLock();notify(`${p.name} 연습이 끝났습니다. 수고했어요!`);}const angles=handAngles(secondsAt(p.start)+e);for(const [name,value]of Object.entries(angles))$(`#${name}-hand`).setAttribute('transform',`rotate(${value} 150 150)`);const clockSeconds=secondsAt(p.start)+Math.floor(e);$('#dial').setAttribute('aria-label',`${p.name} 시계 ${String(Math.floor(clockSeconds/3600)).padStart(2,'0')}:${String(Math.floor(clockSeconds/60)%60).padStart(2,'0')}:${String(clockSeconds%60).padStart(2,'0')}`);$('#second-hand').style.display=$('#seconds-toggle').checked?'':'none';$('#remaining').hidden=!$('#remaining-toggle').checked;$('#remaining').textContent=`남은 시간 ${remainingText(duration-e)}`;$('#progress-bar').style.width=`${e/duration*100}%`;$('#elapsed-label').textContent=`${Math.floor(e/60)} / ${p.minutes}분`;$('#progress-label').textContent=finished?'오늘도 한 걸음, 실전에 가까이':running?'나의 페이스로 집중하는 중':e>0?'잠시 쉬어가도 괜찮아요':'준비가 되면 시작해 보세요';$('#start-label').textContent=finished?'다시 연습하기':running?'잠시 멈추기':e>0?'이어서 연습하기':'연습 시작하기';$('#start [data-icon]').innerHTML=icon(running?'pause':'play');$('#status').classList.toggle('running',running);$('#status').innerHTML=`<i></i> ${finished?'연습 완료':running?'연습 중':e>0?'일시정지':'시작 전'}`;$('#focus-start').innerHTML=`${running?'일시정지':'연습 시작'} <kbd>Space</kbd>`;}
+function render(){
+  const p=current(),duration=p.minutes*60,e=elapsed();
+  if(running&&e>=duration){saved=duration;startedAt=null;running=false;finished=true;releaseWakeLock();notify(`${p.name} 연습이 끝났습니다. 수고했어요!`);}
+  const angles=handAngles(secondsAt(p.start)+e);
+  for(const [name,value]of Object.entries(angles))$(`#${name}-hand`).setAttribute('transform',`rotate(${value} 150 150)`);
+  const clockSeconds=secondsAt(p.start)+Math.floor(e);
+  $('#dial').setAttribute('aria-label',`${p.name} 시계 ${String(Math.floor(clockSeconds/3600)).padStart(2,'0')}:${String(Math.floor(clockSeconds/60)%60).padStart(2,'0')}:${String(clockSeconds%60).padStart(2,'0')}`);
+  $('#second-hand').style.display=$('#seconds-toggle').checked?'':'none';
+  $('#remaining').hidden=!$('#remaining-toggle').checked;
+  $('#remaining').textContent=`남은 시간 ${remainingText(duration-e)}`;
+  $('#progress-bar').max=duration;
+  $('#progress-bar').value=Math.floor(e);
+  $('#progress-bar').setAttribute('aria-valuetext',`${Math.floor(e/60)}분 / ${p.minutes}분`);
+  $('#elapsed-label').textContent=`${Math.floor(e/60)} / ${p.minutes}분`;
+  $('#progress-label').textContent=finished?'오늘의 연습을 마쳤어요':running?'나의 페이스로 집중하는 중':e>0?'잠시 쉬어가도 괜찮아요':'준비가 되면 시작해 보세요';
+  $('#start-label').textContent=finished?'다시 연습하기':running?'잠시 멈추기':e>0?'이어서 연습하기':'연습 시작하기';
+  $('#start [data-icon]').innerHTML=icon(running?'pause':'play');
+  $('#status').classList.toggle('running',running);
+  const status=finished?'연습 완료':running?'연습 중':e>0?'일시정지':'시작 전';
+  // Only announce a status change, not every clock tick.
+  if($('#status').textContent.trim()!==status)$('#status').innerHTML=`<i aria-hidden="true"></i> ${status}`;
+  $('#focus-start').innerHTML=`${running?'일시정지':'연습 시작'} <kbd>Space</kbd>`;
+}
 $('#start').addEventListener('click',toggle);$('#focus-start').addEventListener('click',toggle);$('#reset').addEventListener('click',()=>{reset();notify('시계를 시작 시각으로 되돌렸어요.');});
 for(const id of ['seconds-toggle','remaining-toggle'])$(`#${id}`).addEventListener('change',()=>{savePrefs();render();});
-$('#focus').addEventListener('click',()=>document.body.classList.add('focus-mode'));function exitFocus(){document.body.classList.remove('focus-mode');$('#focus').focus();}$('#exit-focus').addEventListener('click',exitFocus);
+$('#focus').addEventListener('click',()=>{document.body.classList.add('focus-mode');$('#exit-focus').focus();});function exitFocus(){document.body.classList.remove('focus-mode');$('#focus').focus();}$('#exit-focus').addEventListener('click',exitFocus);
 document.addEventListener('keydown',e=>{if(e.code==='Escape'&&document.body.classList.contains('focus-mode'))exitFocus();if(e.code==='Space'&&!e.repeat&&!document.querySelector('dialog[open]')&&!['INPUT','SELECT','TEXTAREA','BUTTON','A'].includes(document.activeElement.tagName)){e.preventDefault();toggle();}});
 $('#guide').addEventListener('click',()=>$('#guide-dialog').showModal());$('#close-guide').addEventListener('click',()=>$('#guide-dialog').close());
 $('#size-button').addEventListener('click',()=>{draftScale=scale;$('#scale').value=scale;applyScale(scale);$('#calibration-dialog').showModal();});$('#scale').addEventListener('input',e=>{draftScale=Number(e.target.value);applyScale(draftScale);});$('#save-size').addEventListener('click',()=>{scale=draftScale;savePrefs();$('#calibration-dialog').close();notify('이 화면의 시계 크기를 저장했어요.');});$('#calibration-dialog').addEventListener('close',()=>applyScale(scale));
