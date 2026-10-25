@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#ffffff" />
   <meta name="description" content="큰 아날로그 시계와 함께 수능 시간을 연습하세요. 전체화면과 실제 크기 보정을 지원합니다." />
-  <title>수능의 시간 — 차분하게, 나의 속도로</title>
+  <title>수능의 시간</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -15,26 +15,23 @@
   <a class="skip-link" href="#main">연습 화면으로 건너뛰기</a>
   <header class="header">
     <a class="brand" href="%BASE_URL%" aria-label="수능의 시간 홈"><span data-icon="clock"></span>수능의 시간</a>
-    <span class="brand-caption">매일 조금씩, 실전에 가까이</span>
-    <button class="guide-button" id="guide"><span data-icon="book"></span> 이용 안내</button>
+    <span class="focus-subject" id="focus-subject">1교시 · 국어 영역</span>
+    <div class="header-actions">
+      <button class="icon-button" id="settings-button" aria-label="설정" title="설정" aria-haspopup="dialog" aria-controls="settings-dialog"><span data-icon="settings"></span></button>
+      <button class="icon-button" id="exit-focus" aria-label="전체화면 나가기" title="전체화면 나가기 (Esc)"><span data-icon="collapse"></span></button>
+    </div>
   </header>
 
   <main id="main" tabindex="-1">
-    <section class="intro" aria-labelledby="intro-title">
-      <div>
-        <h1 id="intro-title">실전의 시간에 집중하세요.</h1>
-        <p class="intro-copy">교시를 고르고, 시계를 보며 나의 속도로 연습하세요.</p>
-      </div>
-    </section>
+    <h1 class="sr-only">수능 시계 연습</h1>
 
     <section class="period-section" aria-labelledby="period-heading">
-      <div class="section-heading"><h2 id="period-heading">오늘 연습할 교시</h2><span id="period-hint">교시를 고르면 연습이 시작됩니다</span></div>
-      <div class="periods" id="periods" role="group" aria-label="교시 선택" aria-describedby="period-hint"></div>
+      <h2 class="sr-only" id="period-heading">교시 선택</h2>
+      <div class="periods" id="periods" role="group" aria-label="교시 선택"></div>
     </section>
 
     <section class="workspace" aria-label="시계와 연습 제어">
       <div class="clock-panel">
-        <div class="panel-heading"><span><strong>연습 시계</strong><span id="selected-name">국어 영역</span></span><span class="status" id="status" role="status"><i aria-hidden="true"></i> 시작 전</span></div>
         <div class="watch-stage">
           <div class="watch" id="watch">
             <div class="strap strap-top" aria-hidden="true"></div>
@@ -45,8 +42,6 @@
                 <circle class="dial-paper" cx="150" cy="150" r="148" />
                 <circle class="dial-outline" cx="150" cy="150" r="145" />
                 <g id="ticks"></g><g id="numbers"></g>
-                <text x="150" y="101" text-anchor="middle" class="dial-brand">SUNEUNG</text>
-                <text x="150" y="114" text-anchor="middle" class="dial-small">QUARTZ</text>
                 <g id="hour-hand"><path d="M146 163 L145 100 L150 86 L155 100 L154 163Z" fill="#111"/></g>
                 <g id="minute-hand"><path d="M147 170 L147 61 L150 47 L153 61 L153 170Z" fill="#111"/></g>
                 <g id="second-hand"><path d="M149.3 177 L149.3 39 L150.7 39 L150.7 177Z" fill="#111"/><circle cx="150" cy="173" r="4" fill="#111"/></g>
@@ -54,42 +49,41 @@
               </svg>
             </div>
           </div>
-          <p class="size-caption" id="size-caption">크게 보기</p>
           <p class="remaining" id="remaining" hidden>남은 시간 80:00</p>
         </div>
-        <div class="clock-toolbar"><button id="focus" class="text-button"><span data-icon="clock"></span> 시계만 보기</button><button id="fullscreen" class="text-button"><span data-icon="expand"></span> 전체화면</button></div>
+        <div class="player-controls" role="group" aria-label="시계 조작">
+          <button id="reset" class="icon-button" aria-label="초기화" title="초기화"><span data-icon="reset"></span></button>
+          <button id="start" class="play-button" aria-label="재생" title="재생 (Space)" aria-keyshortcuts="Space"><span data-icon="play"></span></button>
+          <button id="fullscreen" class="icon-button" aria-label="전체화면" title="전체화면"><span data-icon="expand"></span></button>
+        </div>
       </div>
 
       <aside class="session-panel" aria-labelledby="subject-title">
-        <div class="subject-heading"><span id="period-label">1교시</span><h2 id="subject-title">국어 영역</h2><p id="subject-description">첫 시작을 차분하게, 나의 리듬으로.</p></div>
+        <div class="subject-heading"><span id="period-label">1교시</span><h2 id="subject-title">국어 영역</h2></div>
+        <span class="status" id="status" role="status"><i aria-hidden="true"></i> 준비</span>
         <div class="schedule"><div><span>시작 시각</span><strong id="start-time">08:40</strong></div><span class="schedule-connector" aria-hidden="true"></span><div><span>종료 시각</span><strong id="end-time">10:00</strong></div></div>
         <div class="duration"><span><span data-icon="clock"></span> 시험 시간</span><strong id="duration">80<span>분</span></strong></div>
-        <div class="progress-wrap"><div class="progress-label"><span id="progress-label">준비가 되면 시작해 보세요</span><span id="elapsed-label">0 / 80분</span></div><progress class="progress-track" id="progress-bar" value="0" max="4800" aria-label="연습 진행"></progress></div>
-        <button id="start" class="primary-button" aria-keyshortcuts="Space"><span data-icon="play"></span><span id="start-label">연습 시작하기</span><kbd>Space</kbd></button>
-        <button id="reset" class="reset-button"><span data-icon="reset"></span> 처음부터 다시</button>
-        <p class="session-note">선택한 교시의 시작 시각부터<br /> 실제 시간과 같은 속도로 흘러갑니다.</p>
+        <div class="progress-wrap"><span id="elapsed-label">0 / 80분</span><progress class="progress-track" id="progress-bar" value="0" max="4800" aria-label="연습 진행"></progress></div>
       </aside>
     </section>
 
-    <details class="settings" id="settings">
-      <summary><span data-icon="sliders"></span> 연습 설정<span class="settings-chevron" aria-hidden="true">＋</span></summary>
-      <div class="preferences">
-        <label class="preference"><span><strong>실제 크기로 보기</strong><small>시계판 지름 30mm · 보정값 적용</small></span><input id="actual-size-toggle" name="actual-size" type="checkbox" role="switch" /><span class="toggle" aria-hidden="true"></span></label>
-        <label class="preference"><span><strong>초침 표시</strong><small>초 단위 흐름도 함께 확인해요</small></span><input id="seconds-toggle" name="seconds" type="checkbox" role="switch" checked /><span class="toggle" aria-hidden="true"></span></label>
-        <label class="preference"><span><strong>남은 시간 표시</strong><small>필요할 때만 숫자로 확인해요</small></span><input id="remaining-toggle" name="remaining" type="checkbox" role="switch" /><span class="toggle" aria-hidden="true"></span></label>
-        <div class="calibration-setting"><button id="size-button" class="text-button"><span data-icon="ruler"></span> 실제 크기 보정</button><p>화면에 자를 대고 맞춰 주세요. 보정값은 ‘실제 크기로 보기’에 적용됩니다.</p></div>
-      </div>
-    </details>
-    <p class="bottom-note">오늘 쌓은 익숙함이, 그날의 평온함이 되도록.</p>
   </main>
 
-  <footer><a class="footer-brand" href="%BASE_URL%">수능의 시간</a><p>차분하게, 나의 속도로.</p><span>© 2026</span></footer>
-  <div class="focus-top"><span id="focus-subject">1교시 · 국어 영역</span><button id="exit-focus" class="text-button">집중 모드 나가기 <kbd>Esc</kbd></button></div>
-  <div class="focus-bottom"><button id="focus-start" class="text-button">연습 시작 <kbd>Space</kbd></button></div>
+  <dialog id="settings-dialog" aria-labelledby="settings-title">
+      <form method="dialog"><button class="close-dialog" aria-label="설정 닫기" title="닫기 (Esc)"><span data-icon="close"></span></button></form>
+      <h2 id="settings-title">설정</h2>
+      <div class="preferences">
+        <label class="preference"><span><strong>실제 크기로 보기</strong><small>시계판 지름 30mm · 보정값 적용</small></span><input id="actual-size-toggle" name="actual-size" type="checkbox" role="switch" /><span class="toggle" aria-hidden="true"></span></label>
+        <label class="preference"><span><strong>초침 표시</strong></span><input id="seconds-toggle" name="seconds" type="checkbox" role="switch" checked /><span class="toggle" aria-hidden="true"></span></label>
+        <label class="preference"><span><strong>남은 시간 표시</strong></span><input id="remaining-toggle" name="remaining" type="checkbox" role="switch" /><span class="toggle" aria-hidden="true"></span></label>
+        <div class="calibration-setting"><button id="size-button" class="text-button" aria-haspopup="dialog"><span data-icon="ruler"></span> 실제 크기 보정</button></div>
+      </div>
+      <div class="settings-footer"><span>변경사항은 자동 저장됩니다</span><button class="text-button" id="guide" aria-haspopup="dialog"><span data-icon="book"></span> 이용 안내</button></div>
+  </dialog>
 
   <dialog id="calibration-dialog" aria-labelledby="calibration-title" aria-describedby="calibration-description">
     <form method="dialog"><button class="close-dialog" aria-label="크기 보정 닫기">×</button></form>
-    <h2 id="calibration-title">내 시계와 같은 크기로.</h2>
+    <h2 id="calibration-title">실제 크기 보정</h2>
     <p class="dialog-copy" id="calibration-description">화면에 자를 대고 아래 선이 실제 30mm가 되도록 조절하세요. 보정값은 설정의 ‘실제 크기로 보기’에 적용됩니다.</p>
     <div class="calibration-preview" aria-hidden="true"><div id="calibration-line"><i></i><span>30mm</span><i></i></div></div>
     <label class="range-label" for="scale">크기 보정 <output id="scale-output" for="scale">100%</output></label>
@@ -99,14 +93,14 @@
   </dialog>
   <dialog id="guide-dialog" aria-labelledby="guide-title">
     <form method="dialog"><button class="close-dialog" aria-label="이용 안내 닫기">×</button></form>
-    <h2 id="guide-title">실전의 시간을 연습하세요.</h2>
+    <h2 id="guide-title">이용 안내</h2>
     <ol class="guide-steps">
-      <li><strong>연습할 교시를 선택하세요.</strong><p>시계가 해당 교시의 시작 시각부터 움직입니다. 다른 교시를 선택하면 진행 중인 연습은 초기화되고 새 연습이 시작됩니다.</p></li>
-      <li><strong>연습 환경을 맞춰 보세요.</strong><p>‘연습 설정’을 펼치면 실제 크기, 초침, 남은 시간 표시를 바꿀 수 있어요. 실제 크기 보정은 자로 30mm를 맞춰 주세요.</p></li>
-      <li><strong>문제를 펼치고 연습하세요.</strong><p>시작 버튼이나 스페이스 키로 시작·일시정지할 수 있어요. 전체화면에서는 시계에 집중할 수 있고, Esc나 나가기 버튼으로 돌아옵니다.</p></li>
+      <li><strong>교시를 고르고 재생하세요.</strong><p>재생 아이콘이나 스페이스 키로 시작·일시정지합니다. 다른 교시를 고르면 진행 중인 연습은 초기화됩니다.</p></li>
+      <li><strong>오른쪽 위에서 설정하세요.</strong><p>톱니바퀴 버튼에서 실제 크기, 초침, 남은 시간 표시를 바꿀 수 있어요. 실제 크기 보정은 자로 30mm를 맞춰 주세요.</p></li>
+      <li><strong>전체화면으로 집중하세요.</strong><p>재생 버튼 옆의 전체화면 아이콘을 누르세요. Esc나 오른쪽 위 나가기 버튼으로 돌아옵니다.</p></li>
     </ol>
     <p class="guide-notice">4교시는 한국사와 탐구 1·2를 각각 선택합니다. 영어 듣기 음원과 감독관 안내는 제공하지 않습니다. 실제 시험의 최신 공고도 확인하세요.</p>
-    <button class="primary-button" id="close-guide">연습하러 가기</button>
+    <button class="primary-button" id="close-guide">닫기</button>
   </dialog>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script type="module" src="/src/main.js"></script>
