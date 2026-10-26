@@ -73,6 +73,8 @@
       <div class="preferences">
         <label class="preference"><span><strong>실제 크기로 보기</strong><small>시계판 지름 30mm · 보정값 적용</small></span><input id="actual-size-toggle" name="actual-size" type="checkbox" role="switch" /><span class="toggle" aria-hidden="true"></span></label>
         <label class="preference"><span><strong>초침 표시</strong></span><input id="seconds-toggle" name="seconds" type="checkbox" role="switch" checked /><span class="toggle" aria-hidden="true"></span></label>
+        <label class="preference"><span><strong>초침 움직임</strong></span><select class="preference-select" id="second-motion" name="second-motion"><option value="stepped">1초씩 이동</option><option value="smooth">연속 이동</option></select></label>
+        <label class="preference"><span><strong>시계판 눈금</strong></span><select class="preference-select" id="tick-style" name="tick-style"><option value="lines">선 ┃</option><option value="dots">점 ·</option></select></label>
         <label class="preference"><span><strong>남은 시간 표시</strong></span><input id="remaining-toggle" name="remaining" type="checkbox" role="switch" /><span class="toggle" aria-hidden="true"></span></label>
         <div class="calibration-setting"><button id="size-button" class="text-button" aria-haspopup="dialog"><span data-icon="ruler"></span> 실제 크기 보정</button></div>
       </div>

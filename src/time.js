@@ -12,5 +12,5 @@ export const fourthPeriods = [
 ];
 export function secondsAt(time) { const [h,m] = time.split(':').map(Number); return h*3600+m*60; }
 export function elapsedAt(saved, startedAt, now, duration) { return Math.min(duration, Math.max(0,saved+(startedAt === null ? 0 : (now-startedAt)/1000))); }
-export function handAngles(seconds) { return { hour: seconds / 120 % 360, minute: seconds / 10 % 360, second: Math.floor(seconds) % 60 * 6 }; }
+export function handAngles(seconds, smooth=false) { return { hour: seconds / 120 % 360, minute: seconds / 10 % 360, second: (smooth?seconds:Math.floor(seconds)) % 60 * 6 }; }
 export function remainingText(seconds) { const s=Math.ceil(Math.max(0,seconds));return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; }

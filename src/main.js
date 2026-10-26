@@ -16,14 +16,25 @@ function icon(name){return `<svg class="icon" viewBox="0 0 24 24" aria-hidden="t
 document.querySelectorAll('[data-icon]').forEach(el=>el.innerHTML=icon(el.dataset.icon));
 const ns='http://www.w3.org/2000/svg';
 function svgEl(type,attrs){const el=document.createElementNS(ns,type);for(const [k,v] of Object.entries(attrs))el.setAttribute(k,v);return el;}
-for(let i=0;i<60;i++){$('#ticks').appendChild(svgEl('line',{x1:150,y1:i%5===0?13:15,x2:150,y2:i%5===0?28:21,stroke:'#111','stroke-width':i%5===0?2.4:1,transform:`rotate(${i*6} 150 150)`}));}
+function renderTicks(){
+  const dots=$('#tick-style').value==='dots';
+  $('#ticks').replaceChildren();
+  for(let i=0;i<60;i++){
+    const attrs=dots?{cx:150,cy:18,r:i%5===0?2.4:1.2,fill:'#111'}
+      :{x1:150,y1:i%5===0?13:15,x2:150,y2:i%5===0?28:21,stroke:'#111','stroke-width':i%5===0?2.4:1};
+    $('#ticks').appendChild(svgEl(dots?'circle':'line',{...attrs,transform:`rotate(${i*6} 150 150)`}));
+  }
+}
 for(let i=1;i<=12;i++){const a=i*Math.PI/6;const t=svgEl('text',{x:150+Math.sin(a)*105,y:150-Math.cos(a)*105+11,'text-anchor':'middle','font-family':'Arial, sans-serif','font-size':30,'font-weight':500,fill:'#111'});t.textContent=i;$('#numbers').appendChild(t);}
 let selected=0,fourth=0,running=false,saved=0,startedAt=null,finished=false,wakeLock=null;
 let scale=100;let draftScale=100;
 function readPrefs(){try{return JSON.parse(localStorage.getItem('suneung-prefs')||'{}');}catch{return {};}}
 const prefs=readPrefs();scale=Math.min(200,Math.max(60,Number(prefs.scale)||100));
 $('#seconds-toggle').checked=prefs.seconds!==false;$('#remaining-toggle').checked=prefs.remaining===true;$('#actual-size-toggle').checked=prefs.actualSize===true;
-function savePrefs(){try{localStorage.setItem('suneung-prefs',JSON.stringify({scale,seconds:$('#seconds-toggle').checked,remaining:$('#remaining-toggle').checked,actualSize:$('#actual-size-toggle').checked}));}catch{}}
+$('#second-motion').value=prefs.secondMotion==='smooth'?'smooth':'stepped';
+$('#tick-style').value=prefs.tickStyle==='dots'?'dots':'lines';
+renderTicks();
+function savePrefs(){try{localStorage.setItem('suneung-prefs',JSON.stringify({scale,seconds:$('#seconds-toggle').checked,remaining:$('#remaining-toggle').checked,actualSize:$('#actual-size-toggle').checked,secondMotion:$('#second-motion').value,tickStyle:$('#tick-style').value}));}catch{}}
 function applyScale(value){document.documentElement.style.setProperty('--scale',value/100);$('#scale-output').value=`${value}%`;$('#scale').setAttribute('aria-valuetext',`${value}%`);}
 applyScale(scale);
 function current(){return selected===3?{...periods[3],...fourthPeriods[fourth]}:periods[selected];}
@@ -53,13 +64,24 @@ function updateSession(){
 }
 async function requestWakeLock(){try{if('wakeLock' in navigator&&document.visibilityState==='visible')wakeLock=await navigator.wakeLock.request('screen');}catch{}}
 function releaseWakeLock(){if(wakeLock){wakeLock.release().catch(()=>{});wakeLock=null;}}
-function toggle(){if(running){saved=elapsed();startedAt=null;running=false;releaseWakeLock();}else{if(finished){saved=0;finished=false;}startedAt=Date.now();running=true;requestWakeLock();}render();}
+function toggle(){
+  if(running){
+    const duration=current().minutes*60,e=elapsed();
+    if(e>=duration){render();return;}
+    saved=e;startedAt=null;running=false;releaseWakeLock();
+    notify(`남은 시간 ${remainingText(duration-e)} · 소요 시간 ${remainingText(Math.floor(e))}`);
+  }else{
+    if(finished){saved=0;finished=false;}
+    startedAt=Date.now();running=true;requestWakeLock();
+  }
+  render();
+}
 function reset(){running=false;saved=0;startedAt=null;finished=false;releaseWakeLock();render();}
 function notify(text){$('#toast').textContent=text;$('#toast').classList.add('visible');clearTimeout(notify.timer);notify.timer=setTimeout(()=>$('#toast').classList.remove('visible'),3500);}
 function render(){
   const p=current(),duration=p.minutes*60,e=elapsed();
   if(running&&e>=duration){saved=duration;startedAt=null;running=false;finished=true;releaseWakeLock();notify(`${p.name} 연습 완료`);}
-  const angles=handAngles(secondsAt(p.start)+e);
+  const angles=handAngles(secondsAt(p.start)+e,$('#second-motion').value==='smooth');
   for(const [name,value]of Object.entries(angles))$(`#${name}-hand`).setAttribute('transform',`rotate(${value} 150 150)`);
   const clockSeconds=secondsAt(p.start)+Math.floor(e);
   $('#dial').setAttribute('aria-label',`${p.name} 시계 ${String(Math.floor(clockSeconds/3600)).padStart(2,'0')}:${String(Math.floor(clockSeconds/60)%60).padStart(2,'0')}:${String(clockSeconds%60).padStart(2,'0')}`);
@@ -79,7 +101,7 @@ function render(){
   if($('#status').textContent.trim()!==status)$('#status').textContent=status;
 }
 $('#start').addEventListener('click',toggle);$('#reset').addEventListener('click',reset);
-for(const id of ['seconds-toggle','remaining-toggle','actual-size-toggle'])$(`#${id}`).addEventListener('change',()=>{savePrefs();render();});
+for(const id of ['seconds-toggle','remaining-toggle','actual-size-toggle','second-motion','tick-style'])$(`#${id}`).addEventListener('change',()=>{savePrefs();if(id==='tick-style')renderTicks();render();});
 function enterFocus(){document.body.classList.add('focus-mode');$('#exit-focus').setAttribute('aria-label','집중 모드 나가기');$('#exit-focus').title='집중 모드 나가기 (Esc)';$('#start').focus({preventScroll:true});}
 async function exitFocus(){
   if(document.fullscreenElement){
@@ -103,4 +125,11 @@ $('#settings-button').addEventListener('click',()=>$('#settings-dialog').showMod
 $('#guide').addEventListener('click',()=>$('#guide-dialog').showModal());$('#close-guide').addEventListener('click',()=>$('#guide-dialog').close());
 $('#size-button').addEventListener('click',()=>{draftScale=scale;$('#scale').value=scale;applyScale(scale);$('#calibration-dialog').showModal();});$('#scale').addEventListener('input',e=>{draftScale=Number(e.target.value);applyScale(draftScale);});$('#save-size').addEventListener('click',()=>{scale=draftScale;savePrefs();$('#calibration-dialog').close();notify('이 화면의 시계 크기를 저장했어요.');});$('#calibration-dialog').addEventListener('close',()=>applyScale(scale));
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){render();if(running)requestWakeLock();}});
-updateSession();setInterval(render,200);
+function animateSecondHand(){
+  if(running&&$('#seconds-toggle').checked&&$('#second-motion').value==='smooth'){
+    const angle=handAngles(secondsAt(current().start)+elapsed(),true).second;
+    $('#second-hand').setAttribute('transform',`rotate(${angle} 150 150)`);
+  }
+  requestAnimationFrame(animateSecondHand);
+}
+updateSession();setInterval(render,200);requestAnimationFrame(animateSecondHand);
