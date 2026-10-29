@@ -1,4 +1,7 @@
-import { periods, fourthPeriods, secondsAt, elapsedAt, handAngles, remainingText } from './time.js';
+import { periods, fourthPeriods, secondsAt, customPeriod, elapsedAt, handAngles, remainingText } from './time.js';
+import { Capacitor, SystemBars } from '@capacitor/core';
+import { setAnalyticsEnabled, trackEvent } from './analytics.js';
+const systemBars = Capacitor.isNativePlatform() ? SystemBars : null;
 const $=s=>document.querySelector(s);
 const icons={
   clock:'<circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/>',
@@ -30,24 +33,50 @@ let selected=0,fourth=0,running=false,saved=0,startedAt=null,finished=false,wake
 let scale=100;let draftScale=100;
 function readPrefs(){try{return JSON.parse(localStorage.getItem('suneung-prefs')||'{}');}catch{return {};}}
 const prefs=readPrefs();scale=Math.min(200,Math.max(60,Number(prefs.scale)||100));
+let custom=customPeriod(prefs.customStart,prefs.customEnd)||customPeriod('09:00','10:00');
+$('#custom-start').value=custom.start;$('#custom-end').value=custom.end;
+$('#analytics-toggle').checked=prefs.analytics===true;
+setAnalyticsEnabled(prefs.analytics===true);
 $('#seconds-toggle').checked=prefs.seconds!==false;$('#remaining-toggle').checked=prefs.remaining===true;$('#actual-size-toggle').checked=prefs.actualSize===true;
 $('#second-motion').value=prefs.secondMotion==='smooth'?'smooth':'stepped';
 $('#tick-style').value=prefs.tickStyle==='dots'?'dots':'lines';
 renderTicks();
-function savePrefs(){try{localStorage.setItem('suneung-prefs',JSON.stringify({scale,seconds:$('#seconds-toggle').checked,remaining:$('#remaining-toggle').checked,actualSize:$('#actual-size-toggle').checked,secondMotion:$('#second-motion').value,tickStyle:$('#tick-style').value}));}catch{}}
+function savePrefs(){try{localStorage.setItem('suneung-prefs',JSON.stringify({scale,seconds:$('#seconds-toggle').checked,remaining:$('#remaining-toggle').checked,actualSize:$('#actual-size-toggle').checked,analytics:$('#analytics-toggle').checked,secondMotion:$('#second-motion').value,tickStyle:$('#tick-style').value,customStart:custom.start,customEnd:custom.end}));}catch{}}
 function applyScale(value){document.documentElement.style.setProperty('--scale',value/100);$('#scale-output').value=`${value}%`;$('#scale').setAttribute('aria-valuetext',`${value}%`);}
 applyScale(scale);
-function current(){return selected===3?{...periods[3],...fourthPeriods[fourth]}:periods[selected];}
+function current(){return selected===periods.length?custom:selected===3?{...periods[3],...fourthPeriods[fourth]}:periods[selected];}
+function trackPractice(name){const p=current();trackEvent(name,{subject:p.name,period:p.label,duration_minutes:p.minutes});}
 function elapsed(){return elapsedAt(saved,startedAt,Date.now(),current().minutes*60);}
-$('#periods').innerHTML=periods.map((p,i)=>`<button class="period-button ${i===0?'active':''}" data-period="${i}" aria-label="${p.label} ${p.name}" aria-pressed="${i===0}">${p.name}</button>`).join('');
+$('#periods').innerHTML=[...periods,{label:'커스텀 연습',name:'직접 설정'}].map((p,i)=>`<button class="period-button ${i===0?'active':''}" data-period="${i}" aria-label="${p.label} ${p.name}" aria-pressed="${i===0}">${p.name}</button>`).join('');
 $('#periods').addEventListener('click',e=>{const button=e.target.closest('[data-period]');if(!button||Number(button.dataset.period)===selected)return;selected=Number(button.dataset.period);fourth=0;reset();document.querySelectorAll('.period-button').forEach((b,i)=>{b.classList.toggle('active',i===selected);b.setAttribute('aria-pressed',i===selected);});updateSession();});
+$('#custom-time-form').addEventListener('input',()=>{
+  $('#custom-end').setCustomValidity('');
+  $('#custom-end').removeAttribute('aria-invalid');
+  $('#custom-time-error').hidden=true;
+});
+$('#custom-time-form').addEventListener('submit',e=>{
+  e.preventDefault();
+  const next=customPeriod($('#custom-start').value,$('#custom-end').value);
+  if(!next){
+    const message='시작과 종료 시각을 서로 다르게 입력하세요.';
+    $('#custom-end').setCustomValidity(message);
+    $('#custom-end').setAttribute('aria-invalid','true');
+    $('#custom-time-error').textContent=message;
+    $('#custom-time-error').hidden=false;
+    $('#custom-end').reportValidity();
+    return;
+  }
+  custom=next;savePrefs();reset();updateSession();
+  notify(`${custom.start}–${custom.end} · ${custom.minutes}분으로 설정했어요.`);
+});
 function updateSession(){
   const p=current();
+  $('#custom-time-form').hidden=selected!==periods.length;
   $('#subject-title').textContent=p.name;
   $('#start-time').textContent=p.start;
-  $('#end-time').textContent=p.end;
+  $('#end-time').textContent=(p.end<p.start?'다음 날 ':'')+p.end;
   $('#duration').innerHTML=`${p.minutes}<span>분</span>`;
-  $('#focus-subject').textContent=`${p.label} · ${p.name} 영역`;
+  $('#focus-subject').textContent=selected===periods.length?`${p.name} · ${p.start}–${p.end}`:`${p.label} · ${p.name} 영역`;
   let select=$('.fourth-select');
   if(selected===3){
     if(!select){
@@ -68,10 +97,12 @@ function toggle(){
   if(running){
     const duration=current().minutes*60,e=elapsed();
     if(e>=duration){render();return;}
+    trackPractice('practice_pause');
     saved=e;startedAt=null;running=false;releaseWakeLock();
     notify(`남은 시간 ${remainingText(duration-e)} · 소요 시간 ${remainingText(Math.floor(e))}`);
   }else{
     if(finished){saved=0;finished=false;}
+    trackPractice(saved>0?'practice_resume':'practice_start');
     startedAt=Date.now();running=true;requestWakeLock();
   }
   render();
@@ -80,10 +111,10 @@ function reset(){running=false;saved=0;startedAt=null;finished=false;releaseWake
 function notify(text){$('#toast').textContent=text;$('#toast').classList.add('visible');clearTimeout(notify.timer);notify.timer=setTimeout(()=>$('#toast').classList.remove('visible'),3500);}
 function render(){
   const p=current(),duration=p.minutes*60,e=elapsed();
-  if(running&&e>=duration){saved=duration;startedAt=null;running=false;finished=true;releaseWakeLock();notify(`${p.name} 연습 완료`);}
+  if(running&&e>=duration){trackPractice('practice_complete');saved=duration;startedAt=null;running=false;finished=true;releaseWakeLock();notify(`${p.name} 연습 완료`);}
   const angles=handAngles(secondsAt(p.start)+e,$('#second-motion').value==='smooth');
   for(const [name,value]of Object.entries(angles))$(`#${name}-hand`).setAttribute('transform',`rotate(${value} 150 150)`);
-  const clockSeconds=secondsAt(p.start)+Math.floor(e);
+  const clockSeconds=(secondsAt(p.start)+Math.floor(e))%86400;
   $('#dial').setAttribute('aria-label',`${p.name} 시계 ${String(Math.floor(clockSeconds/3600)).padStart(2,'0')}:${String(Math.floor(clockSeconds/60)%60).padStart(2,'0')}:${String(clockSeconds%60).padStart(2,'0')}`);
   $('#second-hand').style.display=$('#seconds-toggle').checked?'':'none';
   document.body.classList.toggle('actual-size',$('#actual-size-toggle').checked);
@@ -100,10 +131,12 @@ function render(){
   // Only announce a status change, not every clock tick.
   if($('#status').textContent.trim()!==status)$('#status').textContent=status;
 }
-$('#start').addEventListener('click',toggle);$('#reset').addEventListener('click',reset);
+$('#start').addEventListener('click',toggle);$('#reset').addEventListener('click',()=>{trackPractice('practice_reset');reset();});
+$('#analytics-toggle').addEventListener('change',async()=>{savePrefs();await setAnalyticsEnabled($('#analytics-toggle').checked);notify($('#analytics-toggle').checked?'사용 통계 공유를 켰어요. 설정에서 언제든 끌 수 있어요.':'사용 통계 공유를 껐어요.');});
 for(const id of ['seconds-toggle','remaining-toggle','actual-size-toggle','second-motion','tick-style'])$(`#${id}`).addEventListener('change',()=>{savePrefs();if(id==='tick-style')renderTicks();render();});
 function enterFocus(){document.body.classList.add('focus-mode');$('#exit-focus').setAttribute('aria-label','집중 모드 나가기');$('#exit-focus').title='집중 모드 나가기 (Esc)';$('#start').focus({preventScroll:true});}
 async function exitFocus(){
+  if(systemBars){try{await systemBars.show();}catch{notify('시스템 표시줄을 복원하지 못했어요.');}}
   if(document.fullscreenElement){
     try{await document.exitFullscreen();}catch{notify('전체화면을 종료하지 못했어요. Esc 키로 나가 주세요.');return;}
   }
@@ -113,6 +146,8 @@ async function exitFocus(){
 $('#exit-focus').addEventListener('click',exitFocus);
 $('#fullscreen').addEventListener('click',async()=>{
   enterFocus();
+  trackEvent('focus_mode');
+  if(systemBars){try{await systemBars.hide();}catch{notify('시계 집중 모드로 전환했어요.');}return;}
   if(!document.fullscreenEnabled||!document.documentElement.requestFullscreen){notify('이 브라우저는 전체화면을 지원하지 않아 시계 집중 모드로 전환했어요.');return;}
   try{await document.documentElement.requestFullscreen();$('#start').focus({preventScroll:true});}catch{notify('전체화면을 열지 못해 시계 집중 모드로 전환했어요.');}
 });

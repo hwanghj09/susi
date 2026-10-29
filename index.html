@@ -6,9 +6,7 @@
   <meta name="theme-color" content="#ffffff" />
   <meta name="description" content="큰 아날로그 시계와 함께 수능 시간을 연습하세요. 전체화면과 실제 크기 보정을 지원합니다." />
   <title>수능의 시간</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="icon" type="image/png" href="%BASE_URL%favicon.png" />
   <link rel="stylesheet" href="/src/style.css" />
 </head>
 <body>
@@ -28,6 +26,13 @@
     <section class="period-section" aria-labelledby="period-heading">
       <h2 class="sr-only" id="period-heading">교시 선택</h2>
       <div class="periods" id="periods" role="group" aria-label="교시 선택"></div>
+      <form id="custom-time-form" class="custom-time-form" aria-label="커스텀 연습 시간" aria-describedby="custom-time-help" hidden>
+        <label for="custom-start">시작 시각<input id="custom-start" name="custom-start" type="time" required step="60" /></label>
+        <label for="custom-end">종료 시각<input id="custom-end" name="custom-end" type="time" required step="60" aria-describedby="custom-time-error" /></label>
+        <button type="submit" class="primary-button">적용</button>
+        <p id="custom-time-help">종료가 시작보다 이르면 다음 날까지 계산합니다. 적용하면 진행 중인 연습이 초기화됩니다.</p>
+        <p id="custom-time-error" role="alert" hidden></p>
+      </form>
     </section>
 
     <section class="workspace" aria-label="시계와 연습 제어">
@@ -76,9 +81,10 @@
         <label class="preference"><span><strong>초침 움직임</strong></span><select class="preference-select" id="second-motion" name="second-motion"><option value="stepped">1초씩 이동</option><option value="smooth">연속 이동</option></select></label>
         <label class="preference"><span><strong>시계판 눈금</strong></span><select class="preference-select" id="tick-style" name="tick-style"><option value="lines">선 ┃</option><option value="dots">점 ·</option></select></label>
         <label class="preference"><span><strong>남은 시간 표시</strong></span><input id="remaining-toggle" name="remaining" type="checkbox" role="switch" /><span class="toggle" aria-hidden="true"></span></label>
+        <label class="preference"><span><strong>사용 통계 공유 (선택)</strong><small>기기 정보와 연습 동작을 Google Analytics로 전송</small></span><input id="analytics-toggle" name="analytics" type="checkbox" role="switch" /><span class="toggle" aria-hidden="true"></span></label>
         <div class="calibration-setting"><button id="size-button" class="text-button" aria-haspopup="dialog"><span data-icon="ruler"></span> 실제 크기 보정</button></div>
       </div>
-      <div class="settings-footer"><span>변경사항은 자동 저장됩니다</span><button class="text-button" id="guide" aria-haspopup="dialog"><span data-icon="book"></span> 이용 안내</button></div>
+      <div class="settings-footer"><a href="%BASE_URL%privacy.html">개인정보처리방침</a><button class="text-button" id="guide" aria-haspopup="dialog"><span data-icon="book"></span> 이용 안내</button></div>
   </dialog>
 
   <dialog id="calibration-dialog" aria-labelledby="calibration-title" aria-describedby="calibration-description">
@@ -95,7 +101,7 @@
     <form method="dialog"><button class="close-dialog" aria-label="이용 안내 닫기">×</button></form>
     <h2 id="guide-title">이용 안내</h2>
     <ol class="guide-steps">
-      <li><strong>교시를 고르고 재생하세요.</strong><p>재생 아이콘이나 스페이스 키로 시작·일시정지합니다. 다른 교시를 고르면 진행 중인 연습은 초기화됩니다.</p></li>
+      <li><strong>교시를 고르고 재생하세요.</strong><p>‘직접 설정’에서는 시작·종료 시각을 입력하고 적용하세요. 재생 아이콘이나 스페이스 키로 시작·일시정지합니다. 다른 교시를 고르면 진행 중인 연습은 초기화됩니다.</p></li>
       <li><strong>오른쪽 위에서 설정하세요.</strong><p>톱니바퀴 버튼에서 실제 크기, 초침, 남은 시간 표시를 바꿀 수 있어요. 실제 크기 보정은 자로 30mm를 맞춰 주세요.</p></li>
       <li><strong>전체화면으로 집중하세요.</strong><p>재생 버튼 옆의 전체화면 아이콘을 누르세요. Esc나 오른쪽 위 나가기 버튼으로 돌아옵니다.</p></li>
     </ol>

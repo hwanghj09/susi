@@ -1,3 +1,9 @@
 node_modules/
 dist/
 .playwright/
+signing/
+android/keystore.properties
+release/*.aab
+release/*.apk
+release/*.zip
+release/verification/
