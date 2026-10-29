@@ -76,11 +76,23 @@ main { max-width: 1000px; margin: auto; padding: 12px 24px 24px; }
 .primary-button { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 50px; width: 100%; padding: 12px 16px; border: 1px solid var(--primary); border-radius: 5px; background: var(--primary); color: var(--primary-foreground); font-weight: 500; }
 .primary-button:hover { background: #333; color: var(--primary-foreground); }
 .fourth-select, .preference-select { display: block; max-width: 100%; min-height: 44px; padding: 8px; border: 1px solid var(--line); border-radius: 3px; background: var(--surface); color: var(--ink); font-size: 13px; }
+.written-summary { margin: 0 auto 16px; color: var(--muted); }
+.settings-group { margin-top: 24px; }
+.settings-group h3 { margin: 0; font-size: 12px; font-weight: 600; color: var(--muted); }
+.setting-help { margin-top: 10px; font-size: 12px; color: var(--muted); }
+.setting-help:empty { display: none; }
+.exam-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
+.exam-fields label { min-width: 0; font-size: 12px; color: var(--muted); }
+.exam-fields input { display: block; width: 100%; min-width: 0; min-height: 44px; margin-top: 6px; padding: 8px; border: 1px solid var(--line); border-radius: 3px; background: var(--surface); color: var(--ink); }
+.apply-exam { margin: 12px 0 0 auto; padding-inline: 16px; background: var(--selected); font-weight: 500; }
+.preference.sub-preference { padding-left: 12px; }
+#calibration-value { color: var(--muted); font-variant-numeric: tabular-nums; }
+.settings-footer { margin-top: 24px; }
 .preferences { display: grid; grid-template-columns: 1fr; margin-top: 8px; }
 .preference small { color: var(--muted); font-size: 12px; }
 .calibration-setting { padding: 12px 0; }
 .settings-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; border-top: 1px solid var(--line); padding-top: 12px; font-size: 12px; color: var(--muted); }
-.preference { display: flex; align-items: center; gap: 12px; justify-content: space-between; position: relative; cursor: pointer; min-height: 64px; padding: 18px 0; border-bottom: 1px solid var(--line); }
+.preference { display: flex; align-items: center; gap: 12px; justify-content: space-between; position: relative; cursor: pointer; min-height: 56px; padding: 10px 0; border-bottom: 1px solid var(--line); }
 .preference > span:first-child { display: flex; flex-direction: column; gap: 3px; }
 .preference strong { font-size: 14px; font-weight: 500; }
 .preference input { position: absolute; right: 0; width: 44px; height: 44px; margin: 0; opacity: 0; cursor: pointer; }

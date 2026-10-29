@@ -1,4 +1,4 @@
-import { periods, fourthPeriods, secondsAt, elapsedAt, handAngles, remainingText } from './time.js';
+import { periods, fourthPeriods, secondsAt, elapsedAt, handAngles, remainingText, writtenExam } from './time.js';
 const $=s=>document.querySelector(s);
 const icons={
   clock:'<circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/>',
@@ -25,19 +25,22 @@ function renderTicks(){
     $('#ticks').appendChild(svgEl(dots?'circle':'line',{...attrs,transform:`rotate(${i*6} 150 150)`}));
   }
 }
-for(let i=1;i<=12;i++){const a=i*Math.PI/6;const t=svgEl('text',{x:150+Math.sin(a)*105,y:150-Math.cos(a)*105+11,'text-anchor':'middle','font-family':'Arial, sans-serif','font-size':30,'font-weight':500,fill:'#111'});t.textContent=i;$('#numbers').appendChild(t);}
+for(let i=1;i<=12;i++){const a=i*Math.PI/6;const t=svgEl('text',{x:150+Math.sin(a)*105,y:150-Math.cos(a)*105+11,'text-anchor':'middle','font-family':'Arial, sans-serif','font-size':30,'font-weight':700,fill:'#111'});t.textContent=i;$('#numbers').appendChild(t);}
 let selected=0,fourth=0,running=false,saved=0,startedAt=null,finished=false,wakeLock=null;
 let scale=100;let draftScale=100;
-function readPrefs(){try{return JSON.parse(localStorage.getItem('suneung-prefs')||'{}');}catch{return {};}}
+function readPrefs(){try{const value=JSON.parse(localStorage.getItem('suneung-prefs')||'{}');return value&&typeof value==='object'?value:{};}catch{return {};}}
 const prefs=readPrefs();scale=Math.min(200,Math.max(60,Number(prefs.scale)||100));
+let examMode=prefs.examMode==='written'?'written':'suneung';
+let customExam=writtenExam(prefs.examStart,prefs.examMinutes)||writtenExam('09:00',50);
+$('#exam-mode').value=examMode;$('#exam-start').value=customExam.start;$('#exam-minutes').value=customExam.minutes;
 $('#seconds-toggle').checked=prefs.seconds!==false;$('#remaining-toggle').checked=prefs.remaining===true;$('#actual-size-toggle').checked=prefs.actualSize===true;
 $('#second-motion').value=prefs.secondMotion==='smooth'?'smooth':'stepped';
 $('#tick-style').value=prefs.tickStyle==='dots'?'dots':'lines';
 renderTicks();
-function savePrefs(){try{localStorage.setItem('suneung-prefs',JSON.stringify({scale,seconds:$('#seconds-toggle').checked,remaining:$('#remaining-toggle').checked,actualSize:$('#actual-size-toggle').checked,secondMotion:$('#second-motion').value,tickStyle:$('#tick-style').value}));}catch{}}
+function savePrefs(){try{localStorage.setItem('suneung-prefs',JSON.stringify({examMode,examStart:customExam.start,examMinutes:customExam.minutes,scale,seconds:$('#seconds-toggle').checked,remaining:$('#remaining-toggle').checked,actualSize:$('#actual-size-toggle').checked,secondMotion:$('#second-motion').value,tickStyle:$('#tick-style').value}));}catch{}}
 function applyScale(value){document.documentElement.style.setProperty('--scale',value/100);$('#scale-output').value=`${value}%`;$('#scale').setAttribute('aria-valuetext',`${value}%`);}
 applyScale(scale);
-function current(){return selected===3?{...periods[3],...fourthPeriods[fourth]}:periods[selected];}
+function current(){if(examMode==='written')return customExam;return selected===3?{...periods[3],...fourthPeriods[fourth]}:periods[selected];}
 function elapsed(){return elapsedAt(saved,startedAt,Date.now(),current().minutes*60);}
 $('#periods').innerHTML=periods.map((p,i)=>`<button class="period-button ${i===0?'active':''}" data-period="${i}" aria-label="${p.label} ${p.name}" aria-pressed="${i===0}">${p.name}</button>`).join('');
 $('#periods').addEventListener('click',e=>{const button=e.target.closest('[data-period]');if(!button||Number(button.dataset.period)===selected)return;selected=Number(button.dataset.period);fourth=0;reset();document.querySelectorAll('.period-button').forEach((b,i)=>{b.classList.toggle('active',i===selected);b.setAttribute('aria-pressed',i===selected);});updateSession();});
@@ -47,9 +50,11 @@ function updateSession(){
   $('#start-time').textContent=p.start;
   $('#end-time').textContent=p.end;
   $('#duration').innerHTML=`${p.minutes}<span>분</span>`;
-  $('#focus-subject').textContent=`${p.label} · ${p.name} 영역`;
+  $('#focus-subject').textContent=examMode==='written'?`지필고사 · ${p.start}–${p.end}`:`${p.label} · ${p.name} 영역`;
+  $('#periods').hidden=examMode==='written';
+  $('#written-settings').hidden=examMode!=='written';
   let select=$('.fourth-select');
-  if(selected===3){
+  if(examMode==='suneung'&&selected===3){
     if(!select){
       select=document.createElement('select');
       select.className='fourth-select';
@@ -84,7 +89,10 @@ function render(){
   const angles=handAngles(secondsAt(p.start)+e,$('#second-motion').value==='smooth');
   for(const [name,value]of Object.entries(angles))$(`#${name}-hand`).setAttribute('transform',`rotate(${value} 150 150)`);
   const clockSeconds=secondsAt(p.start)+Math.floor(e);
-  $('#dial').setAttribute('aria-label',`${p.name} 시계 ${String(Math.floor(clockSeconds/3600)).padStart(2,'0')}:${String(Math.floor(clockSeconds/60)%60).padStart(2,'0')}:${String(clockSeconds%60).padStart(2,'0')}`);
+  $('#dial').setAttribute('aria-label',`${p.name} 시계 ${String(Math.floor(clockSeconds/3600)%24).padStart(2,'0')}:${String(Math.floor(clockSeconds/60)%60).padStart(2,'0')}:${String(clockSeconds%60).padStart(2,'0')}`);
+  $('#second-motion-row').hidden=!$('#seconds-toggle').checked;
+  $('#calibration-setting').hidden=!$('#actual-size-toggle').checked;
+  $('#calibration-value').textContent=`${scale}%`;
   $('#second-hand').style.display=$('#seconds-toggle').checked?'':'none';
   document.body.classList.toggle('actual-size',$('#actual-size-toggle').checked);
   $('#remaining').hidden=!$('#remaining-toggle').checked;
@@ -121,7 +129,33 @@ document.addEventListener('fullscreenchange',()=>{
   else if(document.body.classList.contains('focus-mode'))exitFocus();
 });
 document.addEventListener('keydown',e=>{if(e.code==='Escape'&&!document.querySelector('dialog[open]')&&document.body.classList.contains('focus-mode'))exitFocus();if(e.code==='Space'&&!e.repeat&&!document.querySelector('dialog[open]')&&!['INPUT','SELECT','TEXTAREA','BUTTON','A'].includes(document.activeElement.tagName)){e.preventDefault();toggle();}});
-$('#settings-button').addEventListener('click',()=>$('#settings-dialog').showModal());
+function previewExam(){
+  const written=$('#exam-mode').value==='written';
+  $('#written-fields').hidden=!written;
+  $('#exam-start').disabled=!written;$('#exam-minutes').disabled=!written;
+  const draft=writtenExam($('#exam-start').value,Number($('#exam-minutes').value));
+  $('#exam-preview').textContent=draft?`${draft.start}–${draft.end} · ${draft.minutes}분${secondsAt(draft.end)<secondsAt(draft.start)?' · 다음 날 종료':''}`:'시작 시각과 1–240분의 시험 시간을 입력하세요.';
+  $('#exam-result').textContent='';
+}
+function openSettings(){
+  $('#exam-mode').value=examMode;$('#exam-start').value=customExam.start;$('#exam-minutes').value=customExam.minutes;
+  previewExam();$('#settings-dialog').showModal();
+}
+$('#settings-button').addEventListener('click',openSettings);
+$('#written-settings').addEventListener('click',openSettings);
+for(const id of ['exam-mode','exam-start','exam-minutes'])$(`#${id}`).addEventListener('input',previewExam);
+$('#exam-settings').addEventListener('submit',e=>{
+  e.preventDefault();
+  const nextMode=$('#exam-mode').value==='written'?'written':'suneung';
+  const nextExam=writtenExam($('#exam-start').value,Number($('#exam-minutes').value));
+  if(nextMode==='written'&&!nextExam)return;
+  const changed=nextMode!==examMode||(nextMode==='written'&&(nextExam.start!==customExam.start||nextExam.minutes!==customExam.minutes));
+  examMode=nextMode;if(nextMode==='written')customExam=nextExam;
+  if(changed)reset();
+  savePrefs();updateSession();
+  $('#exam-result').textContent=changed?'시험 시간을 적용했어요. 연습 화면에서 재생하세요.':'현재 시험 시간과 같아요. 연습을 유지합니다.';
+});
+previewExam();
 $('#guide').addEventListener('click',()=>$('#guide-dialog').showModal());$('#close-guide').addEventListener('click',()=>$('#guide-dialog').close());
 $('#size-button').addEventListener('click',()=>{draftScale=scale;$('#scale').value=scale;applyScale(scale);$('#calibration-dialog').showModal();});$('#scale').addEventListener('input',e=>{draftScale=Number(e.target.value);applyScale(draftScale);});$('#save-size').addEventListener('click',()=>{scale=draftScale;savePrefs();$('#calibration-dialog').close();notify('이 화면의 시계 크기를 저장했어요.');});$('#calibration-dialog').addEventListener('close',()=>applyScale(scale));
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){render();if(running)requestWakeLock();}});

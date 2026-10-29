@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#ffffff" />
-  <meta name="description" content="큰 아날로그 시계와 함께 수능 시간을 연습하세요. 전체화면과 실제 크기 보정을 지원합니다." />
+  <meta name="description" content="큰 아날로그 시계와 함께 수능·지필고사 시간을 연습하세요. 전체화면과 실제 크기 보정을 지원합니다." />
   <title>수능의 시간</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -23,10 +23,11 @@
   </header>
 
   <main id="main" tabindex="-1">
-    <h1 class="sr-only">수능 시계 연습</h1>
+    <h1 class="sr-only">수능·지필고사 시계 연습</h1>
 
     <section class="period-section" aria-labelledby="period-heading">
       <h2 class="sr-only" id="period-heading">교시 선택</h2>
+      <button class="text-button written-summary" id="written-settings" aria-haspopup="dialog" aria-controls="settings-dialog" hidden>지필고사 · 시간 설정 <span data-icon="settings"></span></button>
       <div class="periods" id="periods" role="group" aria-label="교시 선택"></div>
     </section>
 
@@ -70,15 +71,37 @@
   <dialog id="settings-dialog" aria-labelledby="settings-title">
       <form method="dialog"><button class="close-dialog" aria-label="설정 닫기" title="닫기 (Esc)"><span data-icon="close"></span></button></form>
       <h2 id="settings-title">설정</h2>
-      <div class="preferences">
-        <label class="preference"><span><strong>실제 크기로 보기</strong><small>시계판 지름 30mm · 보정값 적용</small></span><input id="actual-size-toggle" name="actual-size" type="checkbox" role="switch" /><span class="toggle" aria-hidden="true"></span></label>
-        <label class="preference"><span><strong>초침 표시</strong></span><input id="seconds-toggle" name="seconds" type="checkbox" role="switch" checked /><span class="toggle" aria-hidden="true"></span></label>
-        <label class="preference"><span><strong>초침 움직임</strong></span><select class="preference-select" id="second-motion" name="second-motion"><option value="stepped">1초씩 이동</option><option value="smooth">연속 이동</option></select></label>
-        <label class="preference"><span><strong>시계판 눈금</strong></span><select class="preference-select" id="tick-style" name="tick-style"><option value="lines">선 ┃</option><option value="dots">점 ·</option></select></label>
-        <label class="preference"><span><strong>남은 시간 표시</strong></span><input id="remaining-toggle" name="remaining" type="checkbox" role="switch" /><span class="toggle" aria-hidden="true"></span></label>
-        <div class="calibration-setting"><button id="size-button" class="text-button" aria-haspopup="dialog"><span data-icon="ruler"></span> 실제 크기 보정</button></div>
-      </div>
-      <div class="settings-footer"><span>변경사항은 자동 저장됩니다</span><button class="text-button" id="guide" aria-haspopup="dialog"><span data-icon="book"></span> 이용 안내</button></div>
+      <section class="settings-group" aria-labelledby="exam-heading">
+        <h3 id="exam-heading">시험 시간</h3>
+        <form id="exam-settings">
+          <label class="preference"><span><strong>시험 종류</strong></span><select class="preference-select" id="exam-mode" name="exam-mode"><option value="suneung">수능</option><option value="written">지필고사</option></select></label>
+          <div id="written-fields" hidden>
+            <div class="exam-fields">
+              <label for="exam-start">시작 시각<input id="exam-start" name="exam-start" type="time" value="09:00" required /></label>
+              <label for="exam-minutes">시험 시간 (분)<input id="exam-minutes" name="exam-minutes" type="number" min="1" max="240" step="1" value="50" required /></label>
+            </div>
+            <p class="setting-help" id="exam-preview" aria-live="polite"></p>
+          </div>
+          <p class="setting-help">시험 종류나 시간을 바꾸면 진행 중인 연습이 초기화됩니다.</p>
+          <button class="apply-exam text-button" type="submit">시험 시간 적용</button>
+          <p class="setting-help" id="exam-result" role="status"></p>
+        </form>
+      </section>
+      <section class="settings-group" aria-labelledby="display-heading">
+        <h3 id="display-heading">시계 표시</h3>
+        <div class="preferences">
+          <label class="preference"><span><strong>남은 시간</strong></span><input id="remaining-toggle" name="remaining" type="checkbox" role="switch" /><span class="toggle" aria-hidden="true"></span></label>
+          <label class="preference"><span><strong>초침</strong></span><input id="seconds-toggle" name="seconds" type="checkbox" role="switch" checked /><span class="toggle" aria-hidden="true"></span></label>
+          <label class="preference sub-preference" id="second-motion-row"><span><strong>초침 움직임</strong></span><select class="preference-select" id="second-motion" name="second-motion"><option value="stepped">1초씩 이동</option><option value="smooth">연속 이동</option></select></label>
+          <label class="preference"><span><strong>시계판 눈금</strong></span><select class="preference-select" id="tick-style" name="tick-style"><option value="lines">선 ┃</option><option value="dots">점 ·</option></select></label>
+        </div>
+      </section>
+      <section class="settings-group" aria-labelledby="size-heading">
+        <h3 id="size-heading">시계 크기</h3>
+        <label class="preference"><span><strong>실제 크기로 보기</strong><small>시계판 지름 30mm · 화면별 보정 필요</small></span><input id="actual-size-toggle" name="actual-size" type="checkbox" role="switch" /><span class="toggle" aria-hidden="true"></span></label>
+        <div class="calibration-setting" id="calibration-setting" hidden><button id="size-button" class="text-button" aria-haspopup="dialog" aria-controls="calibration-dialog"><span data-icon="ruler"></span> 실제 크기 보정 <span id="calibration-value">100%</span></button></div>
+      </section>
+      <div class="settings-footer"><span>시계 표시·크기는 자동 저장</span><button class="text-button" id="guide" aria-haspopup="dialog"><span data-icon="book"></span> 이용 안내</button></div>
   </dialog>
 
   <dialog id="calibration-dialog" aria-labelledby="calibration-title" aria-describedby="calibration-description">
@@ -95,7 +118,7 @@
     <form method="dialog"><button class="close-dialog" aria-label="이용 안내 닫기">×</button></form>
     <h2 id="guide-title">이용 안내</h2>
     <ol class="guide-steps">
-      <li><strong>교시를 고르고 재생하세요.</strong><p>재생 아이콘이나 스페이스 키로 시작·일시정지합니다. 다른 교시를 고르면 진행 중인 연습은 초기화됩니다.</p></li>
+      <li><strong>시험 시간을 정하고 재생하세요.</strong><p>설정에서 수능 또는 지필고사를 선택하세요. 수능은 교시를 고르고, 지필고사는 시작 시각과 시험 시간(1–240분)을 정해 적용하세요. 재생 아이콘이나 스페이스 키로 시작·일시정지합니다. 다른 교시를 고르면 진행 중인 연습은 초기화됩니다.</p></li>
       <li><strong>오른쪽 위에서 설정하세요.</strong><p>톱니바퀴 버튼에서 실제 크기, 초침, 남은 시간 표시를 바꿀 수 있어요. 실제 크기 보정은 자로 30mm를 맞춰 주세요.</p></li>
       <li><strong>전체화면으로 집중하세요.</strong><p>재생 버튼 옆의 전체화면 아이콘을 누르세요. Esc나 오른쪽 위 나가기 버튼으로 돌아옵니다.</p></li>
     </ol>
