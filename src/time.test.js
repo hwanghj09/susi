@@ -15,3 +15,11 @@ test('custom periods calculate same-day and overnight durations',()=>{
 test('custom periods reject empty, malformed, out-of-range and equal times',()=>{
   for(const [start,end] of [['','10:00'],['09:00',''],['9:00','10:00'],['24:00','10:00'],['09:00','10:60'],['09:00','09:00'],[null,'10:00'],['09:00',undefined]])assert.equal(customPeriod(start,end),null);
 });
+test('written exams validate times and durations and wrap at midnight',async()=>{
+  const {writtenExam}=await import('./time.js');
+  assert.deepEqual(writtenExam('09:00',50),{id:'written',label:'지필고사',name:'지필고사',start:'09:00',end:'09:50',minutes:50});
+  assert.equal(writtenExam('23:30',60).end,'00:30');
+  assert.equal(writtenExam('08:00',1).end,'08:01');
+  assert.equal(writtenExam('08:00',240).end,'12:00');
+  for(const [start,minutes] of [['24:00',50],['09:60',50],['9:00',50],[null,50],['09:00',0],['09:00',241],['09:00',1.5],['09:00',NaN],['09:00','50']])assert.equal(writtenExam(start,minutes),null);
+});

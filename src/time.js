@@ -20,3 +20,10 @@ export function customPeriod(start, end) {
 export function elapsedAt(saved, startedAt, now, duration) { return Math.min(duration, Math.max(0,saved+(startedAt === null ? 0 : (now-startedAt)/1000))); }
 export function handAngles(seconds, smooth=false) { return { hour: seconds / 120 % 360, minute: seconds / 10 % 360, second: (smooth?seconds:Math.floor(seconds)) % 60 * 6 }; }
 export function remainingText(seconds) { const s=Math.ceil(Math.max(0,seconds));return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`; }
+
+export function writtenExam(start, minutes) {
+  if (typeof start !== 'string' || !/^([01]\d|2[0-3]):[0-5]\d$/.test(start) || !Number.isInteger(minutes) || minutes < 1 || minutes > 240) return null;
+  const endMinutes = (secondsAt(start) / 60 + minutes) % 1440;
+  const end = `${String(Math.floor(endMinutes / 60)).padStart(2, '0')}:${String(endMinutes % 60).padStart(2, '0')}`;
+  return { id: 'written', label: '지필고사', name: '지필고사', start, end, minutes };
+}
