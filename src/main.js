@@ -52,7 +52,7 @@ function current(){if(examMode==='written')return customExam;return selected===p
 function renderHighlight(){
   const p=current(),enabled=$('#highlight-toggle').checked;
   $('#exam-highlight').replaceChildren(...(enabled?examHighlightPaths(p.start,p.minutes).map(d=>svgEl('path',{d})):[]));
-  $('#highlight-description').textContent=enabled?`${p.name} ${p.start}부터 ${p.end}까지 시침이 지나는 구간을 표시합니다. 겹치는 구간은 더 진하게 표시합니다.`:'';
+  $('#highlight-description').textContent=enabled?`${p.name} ${p.start}부터 ${p.end}까지 분침이 지나는 구간을 표시합니다. 겹치는 구간은 더 진하게 표시합니다.`:'';
 }
 function trackPractice(name){const p=current();trackEvent(name,{subject:p.name,period:p.label,duration_minutes:p.minutes});}
 function elapsed(){return elapsedAt(saved,startedAt,Date.now(),current().minutes*60);}

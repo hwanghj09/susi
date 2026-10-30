@@ -20,14 +20,14 @@ export function customPeriod(start, end) {
 export function elapsedAt(saved, startedAt, now, duration) { return Math.min(duration, Math.max(0,saved+(startedAt === null ? 0 : (now-startedAt)/1000))); }
 export function handAngles(seconds, smooth=false) { return { hour: seconds / 120 % 360, minute: seconds / 10 % 360, second: (smooth?seconds:Math.floor(seconds)) % 60 * 6 }; }
 export function examHighlightPaths(start, minutes) {
-  const angle = handAngles(secondsAt(start)).hour;
+  const angle = handAngles(secondsAt(start)).minute;
   const point = degrees => {
     const radians = degrees * Math.PI / 180;
     return `${150 + Math.sin(radians) * 144} ${150 - Math.cos(radians) * 144}`;
   };
   const paths = [];
-  for (let left = minutes; left > 0; left -= 720) {
-    const sweep = Math.min(left, 720) / 2;
+  for (let left = minutes; left > 0; left -= 60) {
+    const sweep = Math.min(left, 60) * 6;
     paths.push(sweep === 360
       ? 'M150 6 A144 144 0 1 1 150 294 A144 144 0 1 1 150 6 Z'
       : `M150 150 L${point(angle)} A144 144 0 ${sweep > 180 ? 1 : 0} 1 ${point(angle + sweep)} Z`);

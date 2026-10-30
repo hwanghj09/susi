@@ -39,9 +39,9 @@ test('clock settings persist and pause preserves elapsed time and completion',as
   assert.equal(element('#exam-highlight').children.length,0);
   element('#highlight-toggle').checked=true;
   element('#highlight-toggle').change();
-  assert.equal(element('#exam-highlight').children.length,1);
-  const koreanHighlight=element('#exam-highlight').children[0].getAttribute('d');
-  assert.match(element('#highlight-description').textContent,/08:40부터 10:00까지/);
+  assert.equal(element('#exam-highlight').children.length,2);
+  const koreanHighlight=element('#exam-highlight').children.at(-1).getAttribute('d');
+  assert.match(element('#highlight-description').textContent,/08:40부터 10:00까지 분침/);
   start.click();
   assert.equal(toast.textContent,'');
   now+=500;
@@ -90,10 +90,11 @@ test('clock settings persist and pause preserves elapsed time and completion',as
   assert.equal(element('#tick-style').value,'dots');
   assert.equal(element('#ticks').children[0].tagName,'circle');
   assert.equal(element('#highlight-toggle').checked,true);
-  assert.equal(element('#exam-highlight').children[0].getAttribute('d'),koreanHighlight);
+  assert.equal(element('#exam-highlight').children.at(-1).getAttribute('d'),koreanHighlight);
   element('#periods').click({target:{closest:()=>({dataset:{period:'1'}})}});
-  assert.notEqual(element('#exam-highlight').children[0].getAttribute('d'),koreanHighlight);
-  assert.match(element('#highlight-description').textContent,/수학 10:30부터 12:10까지/);
+  assert.equal(element('#exam-highlight').children.length,2);
+  assert.notEqual(element('#exam-highlight').children.at(-1).getAttribute('d'),koreanHighlight);
+  assert.match(element('#highlight-description').textContent,/수학 10:30부터 12:10까지 분침/);
   element('#highlight-toggle').checked=false;
   element('#highlight-toggle').change();
   assert.equal(element('#exam-highlight').children.length,0);
