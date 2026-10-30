@@ -1,6 +1,31 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {periods,fourthPeriods,secondsAt,customPeriod,elapsedAt,handAngles,remainingText} from './time.js';
+import {periods,fourthPeriods,secondsAt,customPeriod,elapsedAt,handAngles,examHighlightPaths,remainingText} from './time.js';
+
+test('exam highlights follow the hour hand through noon and midnight',()=>{
+  for(const p of [periods[0],periods[1],...fourthPeriods,customPeriod('23:30','00:15')]){
+    const paths=examHighlightPaths(p.start,p.minutes);
+    assert.equal(paths.length,1);
+    const coordinates=paths[0].match(/^M150 150 L([\d.e+-]+) ([\d.e+-]+) A144 144 0 0 1 ([\d.e+-]+) ([\d.e+-]+) Z$/).slice(1).map(Number);
+    for(const [index,time] of [[0,p.start],[2,p.end]]){
+      const angle=handAngles(secondsAt(time)).hour*Math.PI/180;
+      assert.ok(Math.abs(coordinates[index]-(150+Math.sin(angle)*144))<1e-9);
+      assert.ok(Math.abs(coordinates[index+1]-(150-Math.cos(angle)*144))<1e-9);
+    }
+  }
+});
+
+test('long custom highlights layer full turns and use the clockwise large arc',()=>{
+  assert.match(examHighlightPaths('09:00',719)[0],/A144 144 0 1 1/);
+  const fullTurn=examHighlightPaths('09:00',720);
+  assert.equal(fullTurn.length,1);
+  assert.equal((fullTurn[0].match(/A144 144/g)||[]).length,2);
+  const overlapping=examHighlightPaths('09:00',800);
+  assert.equal(overlapping.length,2);
+  assert.equal(overlapping[0],fullTurn[0]);
+  assert.equal(overlapping[1],examHighlightPaths('09:00',80)[0]);
+  assert.equal(examHighlightPaths('00:00',1439).length,2);
+});
 test('exam durations match starts and ends, including fourth-period sections',()=>{for(const p of [...periods.filter((_,i)=>i!==3),...fourthPeriods])assert.equal(secondsAt(p.end)-secondsAt(p.start),p.minutes*60);});
 test('math clock starts at 10:30 and finishes at 12:10',()=>{assert.deepEqual(handAngles(secondsAt(periods[1].start)),{hour:315,minute:180,second:0});assert.deepEqual(handAngles(secondsAt(periods[1].start)+6000),{hour:5,minute:60,second:0});});
 test('second hand supports stepped and smooth motion across the minute boundary',()=>{assert.equal(handAngles(30.5).second,180);assert.equal(handAngles(30.5,true).second,183);assert.equal(handAngles(59.5,true).second,357);assert.equal(handAngles(60,true).second,0);assert.equal(handAngles(60.5,true).second,3);});

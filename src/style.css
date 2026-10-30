@@ -8,6 +8,7 @@
   --line: #ddd;
   --selected: #f3f3f3;
   --ring: #111;
+  --exam-highlight: #efc340;
   --face: 30mm;
   --scale: 1;
   font-family: 'Noto Sans KR', sans-serif;
@@ -69,6 +70,8 @@ main { max-width: 1000px; margin: auto; padding: 12px 24px 24px; }
 .watch-case svg { width: var(--dial); height: var(--dial); border-radius: 50%; box-shadow: 0 0 0 2px #222, 0 0 0 3px #eee; }
 .watch-crown { position: absolute; left: calc(50% + var(--dial) * .54); top: calc(50% - var(--dial) * .05); width: calc(var(--dial) * .06); height: calc(var(--dial) * .1); border: 1px solid #555; border-radius: 2px; background: repeating-linear-gradient(0deg, #555 0 1px, #ddd 1px 3px); box-shadow: 2px 2px 3px #00000030; }
 .dial-paper { fill: var(--surface); }
+#exam-highlight { fill: var(--exam-highlight); pointer-events: none; }
+#exam-highlight path { fill-opacity: .26; }
 .dial-outline { fill: none; stroke: #aaa; stroke-width: 1; }
 .player-controls { display: flex; align-items: center; justify-content: center; gap: 28px; padding: 24px 0 12px; }
 .play-button { display: grid; place-items: center; width: 72px; height: 72px; padding: 0; border-radius: 50%; background: var(--primary); color: var(--primary-foreground); flex-shrink: 0; }

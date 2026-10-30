@@ -1,4 +1,4 @@
-import { periods, fourthPeriods, secondsAt, customPeriod, elapsedAt, handAngles, remainingText, writtenExam } from './time.js';
+import { periods, fourthPeriods, secondsAt, customPeriod, elapsedAt, handAngles, examHighlightPaths, remainingText, writtenExam } from './time.js';
 import { Capacitor, SystemBars } from '@capacitor/core';
 import { setAnalyticsEnabled, trackEvent } from './analytics.js';
 const systemBars = Capacitor.isNativePlatform() ? SystemBars : null;
@@ -43,11 +43,17 @@ $('#exam-mode').value=examMode;$('#exam-start').value=customExam.start;$('#exam-
 $('#seconds-toggle').checked=prefs.seconds!==false;$('#remaining-toggle').checked=prefs.remaining===true;$('#actual-size-toggle').checked=prefs.actualSize===true;
 $('#second-motion').value=prefs.secondMotion==='smooth'?'smooth':'stepped';
 $('#tick-style').value=prefs.tickStyle==='dots'?'dots':'lines';
+$('#highlight-toggle').checked=prefs.highlight===true;
 renderTicks();
-function savePrefs(){try{localStorage.setItem('suneung-prefs',JSON.stringify({examMode,examStart:customExam.start,examMinutes:customExam.minutes,scale,seconds:$('#seconds-toggle').checked,remaining:$('#remaining-toggle').checked,actualSize:$('#actual-size-toggle').checked,analytics:$('#analytics-toggle').checked,secondMotion:$('#second-motion').value,tickStyle:$('#tick-style').value,customStart:custom.start,customEnd:custom.end}));}catch{}}
+function savePrefs(){try{localStorage.setItem('suneung-prefs',JSON.stringify({examMode,examStart:customExam.start,examMinutes:customExam.minutes,scale,seconds:$('#seconds-toggle').checked,remaining:$('#remaining-toggle').checked,actualSize:$('#actual-size-toggle').checked,highlight:$('#highlight-toggle').checked,analytics:$('#analytics-toggle').checked,secondMotion:$('#second-motion').value,tickStyle:$('#tick-style').value,customStart:custom.start,customEnd:custom.end}));}catch{}}
 function applyScale(value){document.documentElement.style.setProperty('--scale',value/100);$('#scale-output').value=`${value}%`;$('#scale').setAttribute('aria-valuetext',`${value}%`);}
 applyScale(scale);
 function current(){if(examMode==='written')return customExam;return selected===periods.length?custom:selected===3?{...periods[3],...fourthPeriods[fourth]}:periods[selected];}
+function renderHighlight(){
+  const p=current(),enabled=$('#highlight-toggle').checked;
+  $('#exam-highlight').replaceChildren(...(enabled?examHighlightPaths(p.start,p.minutes).map(d=>svgEl('path',{d})):[]));
+  $('#highlight-description').textContent=enabled?`${p.name} ${p.start}부터 ${p.end}까지 시침이 지나는 구간을 표시합니다. 겹치는 구간은 더 진하게 표시합니다.`:'';
+}
 function trackPractice(name){const p=current();trackEvent(name,{subject:p.name,period:p.label,duration_minutes:p.minutes});}
 function elapsed(){return elapsedAt(saved,startedAt,Date.now(),current().minutes*60);}
 $('#periods').innerHTML=[...periods,{label:'커스텀 연습',name:'직접 설정'}].map((p,i)=>`<button class="period-button ${i===0?'active':''}" data-period="${i}" aria-label="${p.label} ${p.name}" aria-pressed="${i===0}">${p.name}</button>`).join('');
@@ -74,6 +80,7 @@ $('#custom-time-form').addEventListener('submit',e=>{
 });
 function updateSession(){
   const p=current();
+  renderHighlight();
   $('#custom-time-form').hidden=examMode!=='suneung'||selected!==periods.length;
   $('#subject-title').textContent=p.name;
   $('#start-time').textContent=p.start;
@@ -142,6 +149,7 @@ function render(){
 $('#start').addEventListener('click',toggle);$('#reset').addEventListener('click',()=>{trackPractice('practice_reset');reset();});
 $('#analytics-toggle').addEventListener('change',async()=>{savePrefs();await setAnalyticsEnabled($('#analytics-toggle').checked);notify($('#analytics-toggle').checked?'사용 통계 공유를 켰어요. 설정에서 언제든 끌 수 있어요.':'사용 통계 공유를 껐어요.');});
 for(const id of ['seconds-toggle','remaining-toggle','actual-size-toggle','second-motion','tick-style'])$(`#${id}`).addEventListener('change',()=>{savePrefs();if(id==='tick-style')renderTicks();render();});
+$('#highlight-toggle').addEventListener('change',()=>{savePrefs();renderHighlight();});
 function enterFocus(){document.body.classList.add('focus-mode');$('#exit-focus').setAttribute('aria-label','집중 모드 나가기');$('#exit-focus').title='집중 모드 나가기 (Esc)';$('#start').focus({preventScroll:true});}
 async function exitFocus(){
   if(systemBars){try{await systemBars.show();}catch{notify('시스템 표시줄을 복원하지 못했어요.');}}
